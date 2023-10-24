@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import DecimalValidator, MinValueValidator
+from datetime import datetime
 
 
 class Expense(models.Model):
@@ -23,6 +24,7 @@ class Expense(models.Model):
         validators=[DecimalValidator(max_digits=6, decimal_places=2),
                     MinValueValidator(limit_value=0)]
     )
-    date = models.DateField(auto_now_add=True)
+    #date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=datetime.today().date())
     user = models.ForeignKey(User, related_name="expenses", on_delete=models.CASCADE)
     description = models.TextField(max_length=100)
