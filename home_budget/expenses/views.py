@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from .models import Expense
 from .serializers import ExpenseSerializer, UserSerializer
 
+from django.db.models import Sum
+import json
+
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
@@ -18,13 +21,20 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def report(self, request):
-        print(request.query_params)
-        year = request.query_params.get('year', '2024')
-        # queryset ot work on - aggregates?
-        queryset = self.get_queryset().filter(date__year=year)
-        serializer = self.get_serializer(queryset, many=True)
+        year = request.query_params.get("year", 0)
+        month = request.query_params.get("month", 0)
 
-        return Response(serializer.data)
+        queryset = self.get_queryset().filter(date__year=year).values("category").annotate(total=Sum("amount"))
+        #serializer = self.get_serializer(queryset, many=True)
+
+        response = {k:v for k, v in request.query_params.items()}
+        response["data"] = queryset
+        #response = json.dumps(response, indent=4)
+
+
+        #return Response(serializer.data)
+        # czy to json response na pewno? nie ma [] na początku
+        return Response(response)
 
 
 
