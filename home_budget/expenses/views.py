@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 from rest_framework import generics, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
 from .serializers import ExpenseSerializer, UserSerializer
 
 from django.db.models import Sum
-import json
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
@@ -19,23 +20,29 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
 
-    @action(detail=False)
-    def report(self, request):
-        year = request.query_params.get("year", 0)
-        month = request.query_params.get("month", 0)
+    @action(detail=False, url_path="report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?")
+    def report(self, request, year=None, month=None):
 
-        queryset = self.get_queryset().filter(date__year=year).values("category").annotate(total=Sum("amount"))
-        #serializer = self.get_serializer(queryset, many=True)
+        # Additional year and month validation.
+        if int(year) == 0:
+            return Response("Year cannot be 0.", status=HTTP_400_BAD_REQUEST)
 
-        response = {k:v for k, v in request.query_params.items()}
+        if month and (int(month) == 0 or int(month) > 12):
+            return Response("Month should be from range 1-12.",
+                            status=HTTP_400_BAD_REQUEST)
+
+        # Filter database and create response
+        if not month:
+            q = Q(date__year=year)
+            response = dict(year=year)
+        else:
+            q = Q(date__year=year, date__month=month)
+            response = dict(year=year, month=month)
+        queryset = self.get_queryset().filter(q).values("category")
+        queryset = queryset.annotate(total=Sum("amount"))
         response["data"] = queryset
-        #response = json.dumps(response, indent=4)
 
-
-        #return Response(serializer.data)
-        # czy to json response na pewno? nie ma [] na początku
         return Response(response)
-
 
 
 class UsersListAPIView(generics.ListAPIView):
