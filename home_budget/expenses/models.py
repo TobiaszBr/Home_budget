@@ -16,8 +16,26 @@ class Expense(models.Model):
         ("Loans to others", "Loans to others")
     ]
 
+    transport_subcategories = [
+        ("Gas", "Gas"),
+        ("Fuel", "Fuel"),
+        ("MPK/PKP Tickets", "MPK/PKP Tickets"),
+        ("Taxi", "Taxi")
+    ]
+
+    savings_subcategories = [
+        ("Financial cushion", "Financial cushion"),
+        ("Own contribution", "Own contribution"),
+        ("Investments", "Investments"),
+        ("Others", "Others")
+    ]
+
+    subcategories = transport_subcategories + savings_subcategories
+
     category = models.CharField(max_length=30, choices=categories)
+    subcategory = models.CharField(max_length=30, choices=subcategories, blank=True)
     amount = models.DecimalField(
+        blank=True,
         max_digits=6,
         decimal_places=2,
         default=0.0,
@@ -25,6 +43,6 @@ class Expense(models.Model):
                     MinValueValidator(limit_value=0)]
     )
     #date = models.DateField(auto_now_add=True)
-    date = models.DateField(default=datetime.today().date())
+    date = models.DateField(blank=True, default=datetime.today().date())
     user = models.ForeignKey(User, related_name="expenses", on_delete=models.CASCADE)
-    description = models.TextField(max_length=100)
+    description = models.TextField(blank=True, max_length=100)
