@@ -1,41 +1,16 @@
 from django.contrib.auth.models import User
-from django.db import models
 from django.core.validators import DecimalValidator, MinValueValidator
+from django.db import models
+from django.forms import ModelForm, Select
 from datetime import datetime
+from .categories import MAIN_CATEGORIES, SUBCATEGORIES_LIST
 
 
 class Expense(models.Model):
-    categories = [
-        ("Savings", "Savings"),
-        ("Food", "Food"),
-        ("Flat rent", "Flat rent"),
-        ("Multimedia fees", "Multimedia fees"),
-        ("Transport", "Transport"),
-        ("Fund costs", "Fund costs"),
-        ("Others", "Others"),
-        ("Loans to others", "Loans to others")
-    ]
-
-    transport_subcategories = [
-        ("Gas", "Gas"),
-        ("Fuel", "Fuel"),
-        ("MPK/PKP Tickets", "MPK/PKP Tickets"),
-        ("Taxi", "Taxi")
-    ]
-
-    savings_subcategories = [
-        ("Financial cushion", "Financial cushion"),
-        ("Own contribution", "Own contribution"),
-        ("Investments", "Investments"),
-        ("Others", "Others")
-    ]
-
-    subcategories = transport_subcategories + savings_subcategories
-
-    category = models.CharField(max_length=30, choices=categories)
-    subcategory = models.CharField(max_length=30, choices=subcategories, blank=True)
+    category = models.CharField(max_length=40, choices=MAIN_CATEGORIES)
+    subcategory = models.CharField(max_length=100, choices=SUBCATEGORIES_LIST)
     amount = models.DecimalField(
-        blank=True,
+        blank=False,
         max_digits=6,
         decimal_places=2,
         default=0.0,
@@ -43,6 +18,15 @@ class Expense(models.Model):
                     MinValueValidator(limit_value=0)]
     )
     #date = models.DateField(auto_now_add=True)
-    date = models.DateField(blank=True, default=datetime.today().date())
+    date = models.DateField(default=datetime.today().date())
     user = models.ForeignKey(User, related_name="expenses", on_delete=models.CASCADE)
-    description = models.TextField(blank=True, max_length=100)
+    description = models.TextField(max_length=100)
+
+
+class ExpenseForm(ModelForm):
+    class Meta:
+        model = Expense
+        fields = []
+        widgets = {
+            "category": Select(attrs={"onchange": "this.form.submit();"})
+        }

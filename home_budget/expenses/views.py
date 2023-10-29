@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Sum, Q
 from rest_framework import generics, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,12 +7,13 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
 from .serializers import ExpenseSerializer, UserSerializer
 
-from django.db.models import Sum
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

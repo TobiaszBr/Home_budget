@@ -1,79 +1,41 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
+from rest_framework import serializers
+from .categories import MAIN_CATEGORIES, SUBCATEGORIES
 from .models import Expense
-
-categories = [
-    ("Savings", "Savings"),
-    ("Food", "Food"),
-    ("Flat rent", "Flat rent"),
-    ("Multimedia fees", "Multimedia fees"),
-    ("Transport", "Transport"),
-    ("Fund costs", "Fund costs"),
-    ("Others", "Others"),
-    ("Loans to others", "Loans to others")
-]
-
-transport_subcategories = [
-    ("Gas", "Gas"),
-    ("Fuel", "Fuel"),
-    ("MPK/PKP Tickets", "MPK/PKP Tickets"),
-    ("Taxi", "Taxi")
-]
-
-savings_subcategories = [
-    ("Financial cushion", "Financial cushion"),
-    ("Own contribution", "Own contribution"),
-    ("Investments", "Investments"),
-    ("Others", "Others")
-]
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
-    subcategory = serializers.ChoiceField(choices=[], allow_blank=True)
+    category = serializers.ChoiceField(
+        choices=MAIN_CATEGORIES,
+        style={"template": "templates/expenses/select_onchange_submit.html"}
+    )
+    # subcategory = serializers.ChoiceField(
+    #     choices=SUBCATEGORIES["Savings"],
+    # )
+    description = serializers.CharField(
+        max_length=100,
+        style={"base_template": "textarea.html"},
+        allow_blank=True
+    )
 
+    # Jeżeli mam to pokomentowane to działa dodawanie na PUT i PATCH itd ale za 1 załadowaniem strony
+    # Subcategory zawiera wszystko.. Jeżeli odkomentuje, to bd zawierać tylko startowe Savings
+    # ale za to nie działa PUT itd.. bo jest jakiś błąd "\"Grocerise\" np ..
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.transport_subcategories = [
-        #     ("Gas", "Gas"),
-        #     ("Fuel", "Fuel"),
-        #     ("MPK/PKP Tickets", "MPK/PKP Tickets"),
-        #     ("Taxi", "Taxi")
-        # ]
-        #
-        # self.fields["subcategory"].choices = self.transport_subcategories
-
-
+        #self.fields["subcategory"].choices = SUBCATEGORIES["Savings"]
 
     class Meta:
         model = Expense
         fields = ["id", "category", "subcategory", "amount", "date", "description"]
 
-
     def validate(self, data):
-        if data["category"] == "Transport":
-            self.fields["subcategory"].choices = transport_subcategories
-            self.fields["subcategory"].allow_blank = False
+        self.fields["subcategory"].choices = SUBCATEGORIES[data["category"]]
+        print(data["subcategory"])
+
+        if not (data["subcategory"], data["subcategory"]) in SUBCATEGORIES[data["category"]]:
+            raise serializers.ValidationError("Wrong subcategory for choosen category")
         return super().validate(data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # def validate(self, data):
-    #     """Checks if subcategory matches appropriate category"""
-    #
-    #     if data["category"] == "Savings" and data["subcategory"] not in ["Financial cushion", "Own contribution", "Investments", "Others"]:
-    #         raise serializers.ValidationError("Subcategory for category 'Savings' can be one of the following: Financial cushion, Own contribution, Investments, Others")
-    #     if data["category"] == "Transport" and data["subcategory"] not in ["Gas", "Fuel", "MPK/PKP Tickets", "Taxi"]:
-    #         raise serializers.ValidationError("Subcategory for category 'Transport' can be one of the following: Gas, Fuel, MPK/PKP Tickets, Taxi")
 
 
 class UserSerializer(serializers.ModelSerializer):
