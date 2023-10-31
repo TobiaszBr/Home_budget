@@ -13,8 +13,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     serializer_class = ExpenseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -23,14 +21,14 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?")
     def report(self, request, year=None, month=None):
-
         # Additional year and month validation.
         if int(year) == 0:
             return Response("Year cannot be 0.", status=HTTP_400_BAD_REQUEST)
 
         if month and (int(month) == 0 or int(month) > 12):
-            return Response("Month should be from range 1-12.",
-                            status=HTTP_400_BAD_REQUEST)
+            return Response(
+                "Month should be from range 1-12.", status=HTTP_400_BAD_REQUEST
+            )
 
         # Filter database and create response
         if not month:

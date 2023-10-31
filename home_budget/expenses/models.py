@@ -3,17 +3,15 @@ from django.core.validators import DecimalValidator, MinValueValidator
 from django.db import models
 from django.forms import ModelForm, Select
 from datetime import datetime
-from .categories import MAIN_CATEGORIES, SUBCATEGORIES_LIST
+from .categories import CATEGORIES, SUBCATEGORIES
 
 
 class Expense(models.Model):
-    category = models.CharField(max_length=40, choices=MAIN_CATEGORIES)
-    subcategory = models.CharField(max_length=100, choices=SUBCATEGORIES_LIST)
+    category = models.CharField(max_length=40, choices=CATEGORIES)
+    subcategory = models.CharField(max_length=100, choices=SUBCATEGORIES)
     amount = models.DecimalField(
-        blank=False,
         max_digits=6,
         decimal_places=2,
-        default=0.0,
         validators=[DecimalValidator(max_digits=6, decimal_places=2),
                     MinValueValidator(limit_value=0)]
     )
