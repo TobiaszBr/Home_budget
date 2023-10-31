@@ -4,7 +4,7 @@ CATEGORIES = [
     ("Flat rent", "Flat rent"),
     ("Multimedia fees", "Multimedia fees"),
     ("Transport", "Transport"),
-    ("Loans to others", "Loans to others"),
+    ("Loans", "Loans"),
     ("Fund costs", "Fund costs"),
     ("Company expenses", "Company expenses"),
     ("My loans to others", "My loans to others"),
@@ -22,21 +22,21 @@ SUBCATEGORIES = [
         ),
     ),
     (
-            "Food",
-            (
-                ("Groceries", "Groceries"),
-                ("Fast food", "Fast food"),
-                ("Eating out", "Eating out"),
-                ("Others", "Others"),
-            ),
+        "Food",
+        (
+            ("Groceries", "Groceries"),
+            ("Fast food", "Fast food"),
+            ("Eating out", "Eating out"),
+            ("Others", "Others"),
+        ),
     ),
     (
-            "Flat rent",
-            (
-                ("Flat rent", "Flat rent"),
-                ("Billings", "Billings"),
-                ("Others", "Others"),
-            ),
+        "Flat rent",
+        (
+            ("Flat rent", "Flat rent"),
+            ("Billings", "Billings"),
+            ("Others", "Others"),
+        ),
     ),
     (
         "Multimedia fees",
