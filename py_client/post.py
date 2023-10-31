@@ -7,9 +7,9 @@ from home_budget.expenses.categories import SUBCATEGORIES_DICT
 
 # Authentitacion
 auth_endpoint = "http://localhost:8000/api/auth/"
-password = "testowe1"    #getpass()
+password = "testpassword1"    #getpass()
 data = {
-    "username": "Tobiasz",
+    "username": "TestUser",
     "password": password
 }
 auth_response = requests.post(auth_endpoint, json=data)
@@ -21,9 +21,10 @@ if auth_response.status_code == 200:
     }
     endpoint = "http://localhost:8000/api/expenses/"
 
-    i = 0
+    i = 1
     for year in range(2019, 2023):
         for month in range(1,13):
+            print(f"------{year} - {month}------")
             for category in SUBCATEGORIES_DICT.keys():
                 day = randint(1, 28)
                 amount = randint(1, 1000)
@@ -37,12 +38,14 @@ if auth_response.status_code == 200:
                     "description": f"Test description {i}"
                 }
 
-                i += 1
-
                 # POST response
                 post_response = requests.post(endpoint, json=data, headers=headers)
 
+                if post_response.status_code != 201:
+                    print(data, post_response.json())
+
                 print(f"{i}. Status = {post_response.status_code}")
-            print(f"------{year} - {month}------")
+                i += 1
+
 
     #pp(post_response.json())
