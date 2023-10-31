@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.validators import DecimalValidator, MinValueValidator
 from django.db import models
 from django.forms import ModelForm, Select
-from datetime import datetime
+from django.utils import timezone
 from .categories import CATEGORIES, SUBCATEGORIES
 
 
@@ -15,8 +15,7 @@ class Expense(models.Model):
         validators=[DecimalValidator(max_digits=6, decimal_places=2),
                     MinValueValidator(limit_value=0)]
     )
-    #date = models.DateField(auto_now_add=True)
-    date = models.DateField(default=datetime.today().date())
+    date = models.DateField(default=timezone.now().date())
     user = models.ForeignKey(User, related_name="expenses", on_delete=models.CASCADE)
     description = models.TextField(max_length=100)
 
