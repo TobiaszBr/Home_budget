@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import authentication, generics, viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
@@ -14,6 +16,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     authentication_classes = [authentication.SessionAuthentication,
                               authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["category", "subcategory", "amount", "date", "description"]
+    search_fields = ["category", "subcategory", "amount", "date", "description"]
+    ordering_fields = ["category", "subcategory", "amount", "date"]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
