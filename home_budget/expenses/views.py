@@ -7,6 +7,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
+from .report_pdf_generator import ReportPdf
 from .serializers import ExpenseSerializer, UserSerializer
 
 
@@ -48,6 +49,12 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(q).values("category")
         queryset = queryset.annotate(total=Sum("amount"))
         response["data"] = queryset
+
+        try:
+            report_pdf = ReportPdf(response, "expenses/report_pdf/report.pdf")
+            report_pdf.save_pdf()
+        except:
+            pass
 
         return Response(response)
 
