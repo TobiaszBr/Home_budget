@@ -1,4 +1,4 @@
-import sys
+import os, sys
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,6 +15,7 @@ sys.path.insert(
 )
 from report_pdf_generator import ReportPdf
 
+from pathlib import Path
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
@@ -58,7 +59,11 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         response["data"] = queryset
 
         try:
-            report_pdf = ReportPdf(response, "report_pdf/report.pdf")
+            # Needed for image - no size control?
+            # BASE_DIR = Path(__file__).resolve().parent.parent
+            # img_path = "file:\\\\" + os.path.join(BASE_DIR, 'report_pdf', 'pic_3.jpeg')
+            img_path = ""
+            report_pdf = ReportPdf(response, "report_pdf/report.pdf", img_path)
             report_pdf.save_pdf()
         except:
             print("Something went wrong with generate pdf file.")
