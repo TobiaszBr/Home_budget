@@ -1,3 +1,4 @@
+import sys
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,15 +8,21 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
-from .report_pdf_generator import ReportPdf
 from .serializers import ExpenseSerializer, UserSerializer
+
+sys.path.insert(
+    0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
+)
+from report_pdf_generator import ReportPdf
 
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
-    authentication_classes = [authentication.SessionAuthentication,
-                              authentication.TokenAuthentication]
+    authentication_classes = [
+        authentication.SessionAuthentication,
+        authentication.TokenAuthentication,
+    ]
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["category", "subcategory", "amount", "date", "description"]
@@ -51,10 +58,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         response["data"] = queryset
 
         try:
-            report_pdf = ReportPdf(response, "expenses/report_pdf/report.pdf")
+            report_pdf = ReportPdf(response, "report_pdf/report.pdf")
             report_pdf.save_pdf()
         except:
-            pass
+            print("Something went wrong with generate pdf file.")
 
         return Response(response)
 
