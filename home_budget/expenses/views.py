@@ -1,4 +1,4 @@
-import os, sys
+import sys
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -58,13 +58,11 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         queryset = queryset.annotate(total=Sum("amount"))
         response["data"] = queryset
 
+        # Generate pdf report
         try:
             # Needed for image - no size control?
             BASE_DIR = Path(__file__).resolve().parent.parent
-            img_path1 = "file:\\\\" + os.path.join(BASE_DIR, 'report_pdf', 'chart1.png')
-            img_path2 = "file:\\\\" + os.path.join(BASE_DIR, 'report_pdf', 'chart2.png')
-            #img_path = ""
-            report_pdf = ReportPdf(response, "report_pdf/report.pdf", img_path1, img_path2)
+            report_pdf = ReportPdf(response, "report_pdf", BASE_DIR)
             report_pdf.save_pdf()
         except:
             print("Something went wrong with generate pdf file.")

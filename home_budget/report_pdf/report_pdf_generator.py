@@ -1,18 +1,26 @@
 from datetime import date
+import os
+import matplotlib.pyplot as plt
 from weasyprint import HTML, CSS
 
 
 class ReportPdf:
-    def __init__(self, data, report_file_name, img_path1, img_path2):
+    def __init__(self, data, report_directory, BASE_DIR):
         self.data = data
         self.caption = ""
         self.headers = []
         self.rows = []
-        self.report_file_name = report_file_name
+        self.report_directory = report_directory
+        self.report_name = "report.pdf"
+        self.chart_name = "chart.jpg"
+        self.chart_axis_x = []
+        self.chart_axis_y = []
         self.date = None
-        self.img_path1 = img_path1
-        self.img_path2 = img_path2
+        self.BASE_DIR = BASE_DIR
+        self.chart_path1 = None
+
         self.add_rows()
+        self.create_chart()
 
     def add_rows(self):
         # create caption
@@ -28,6 +36,10 @@ class ReportPdf:
         for element in self.data["data"]:
             row = f"<tr><td>{element['category']}</td><td>{element['total']}</td></tr>"
             self.rows.append(row)
+
+            # create x and y chart axis
+            self.chart_axis_x.append(element['category'])
+            self.chart_axis_y.append(element['total'])
 
     def define_style_css(self):
         stylesheet = """
@@ -140,6 +152,23 @@ class ReportPdf:
 
         return stylesheet
 
+    def create_chart(self):
+        # x = ["Savings", "Food", "Flat rent", "Multimedia fees", "Transport", "Loans",
+        #      "Fund costs", "Company expenses", "My loans to others", "Others"]
+        # y = [1000.2, 564.3, 219.4, 821.0, 123.2, 432.6, 623.1, 76.3, 20.4, 992.1]
+
+        x = self.chart_axis_x
+        y = self.chart_axis_y
+
+        plt.bar(x, y, width=0.5, color="#86af49")
+        plt.grid(axis="y")
+        plt.xticks(rotation=20, ha="right")
+        plt.tight_layout()
+        # plt.show()
+        plt.savefig(f"{self.report_directory}/{self.chart_name}")
+        self.chart_path1 = "file:\\\\" + os.path.join(self.BASE_DIR, self.report_directory, self.chart_name)
+
+
     def create_content(self):
         data_table = f"""<table class="center">
             <thead>
@@ -157,10 +186,10 @@ class ReportPdf:
             <div class="container_subtitle1"><h2>Summary in terms of amounts</h2></div>
             <div class="container_first_chart_section">
                 <div class="container_table">{data_table}</div>
-                <div class="container_chart1"><img class="displayed" src ="{self.img_path1}"></div>
+                <div class="container_chart1"><img class="displayed" src="{self.chart_path1}"></div>
             </div>
             <div class="container_subtitle2"><h2>Percentage share of a given category</h2></div>
-            <div class="container_chart2"><img class="displayed" src ="{self.img_path2}"></div>
+            <div class="container_chart2"></div>
         </div>
         """
 
@@ -171,4 +200,4 @@ class ReportPdf:
         stylesheet = self.define_style_css()
         html = HTML(string=content)
         css = CSS(string=stylesheet)
-        html.write_pdf(f"{self.report_file_name}", stylesheets=[css])
+        html.write_pdf(f"{self.report_directory}/{self.report_name}", stylesheets=[css])
