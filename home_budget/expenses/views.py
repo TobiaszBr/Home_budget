@@ -15,7 +15,6 @@ sys.path.insert(
 )
 from report_pdf_generator import ReportPdf
 
-from pathlib import Path
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
@@ -60,9 +59,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         # Generate pdf report
         try:
-            # Needed for image - no size control?
-            BASE_DIR = Path(__file__).resolve().parent.parent
-            report_pdf = ReportPdf(response, "report_pdf", BASE_DIR)
+            report_pdf = ReportPdf(response)
             report_pdf.save_pdf()
         except:
             print("Something went wrong with generate pdf file.")
