@@ -6,14 +6,16 @@ from matplotlib import pyplot as plt
 from weasyprint import HTML, CSS
 
 
-# pyplot backend needs to be chnged
+# pyplot backend needs to be changed
 matplotlib.use("Agg")
 
 
 class ReportPdf:
     def __init__(self, data):
         self.data = data
-        self.report_date = date(int(self.data["year"]), int(self.data["month"]), 1)
+        self.report_date = date(
+            int(self.data["year"]), int(self.data.get("month", 1)), 1
+        )
         self.table_headers = []
         self.table_rows = []
         self.report_directory = "report_pdf"
@@ -26,11 +28,13 @@ class ReportPdf:
         self.bar_char_path = None
         self.pie_char_path = None
 
-        # html content variavles
-        self.doc_title = f"Expenses report for {self.report_date.strftime('%B %Y')}"
+        # html content variables
+        title_format = "%B %Y" if self.data.get("month", "") else "%Y"
+        self.doc_title = (
+            f"Expenses report for {self.report_date.strftime(title_format)}"
+        )
         self.subtitle1 = "Summary in terms of amounts"
         self.subtitle2 = "Percentage share of a given category"
-        self.page_color = "#d5e1df"
 
         # call create methods
         self.create_table()
@@ -59,14 +63,22 @@ class ReportPdf:
         plt.grid(axis="y")
         plt.xticks(rotation=20, ha="right")
         plt.tight_layout()
-        bar_chart_path = os.path.join(self.BASE_DIR, self.report_directory, self.bar_chart_name)
+        bar_chart_path = os.path.join(
+            self.BASE_DIR, self.report_directory, self.bar_chart_name
+        )
         plt.savefig(bar_chart_path)
         self.bar_char_path = "file:\\\\" + bar_chart_path
         plt.close()
 
     def create_pie_chart(self):
-        plt.pie(self.chart_axis_y, labels=self.chart_axis_x, autopct=lambda pct: f"{pct:.1f}%")
-        pie_chart_path = os.path.join(self.BASE_DIR, self.report_directory, self.pie_chart_name)
+        plt.pie(
+            self.chart_axis_y,
+            labels=self.chart_axis_x,
+            autopct=lambda pct: f"{pct:.1f}%",
+        )
+        pie_chart_path = os.path.join(
+            self.BASE_DIR, self.report_directory, self.pie_chart_name
+        )
         plt.savefig(pie_chart_path)
         self.pie_char_path = "file:\\\\" + pie_chart_path
         plt.close()
