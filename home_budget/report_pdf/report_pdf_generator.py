@@ -58,6 +58,69 @@ class ReportPdf:
             
             """
 
+        stylesheet = """
+            div.container_page {
+                width: 210mm;
+                height: 297mm;
+                margin-top: -22mm;
+                margin-left: -22mm;
+                background-color: #499afa;
+            }
+            
+            div.container_title {
+                height: 20mm;
+                margin-top: 20mm;
+                margin-bottom: 20mm;
+                background-color: #fab949;
+            }
+            
+            div.container_subtitle1 {
+                height: 10mm;
+                margin-bottom: 10mm;
+                background-color: #fab949;
+            }
+            
+            div.container_first_chart_section {
+                height: 83mm;
+                width: 200mm;
+                margin-left: 5mm;
+                margin-right: 5mm;
+                margin-bottom: 10mm;
+                background-color: red;
+            }
+            
+            div.container_table {
+                float: left;
+                height: 100%;
+                width: 95mm;
+                background-color: #fab949;
+            }
+            
+            div.container_chart1 {
+                float: left;
+                height: 100%;
+                width: 95mm;
+                margin-left: 9mm;
+                background-color: green;
+            }
+            
+            div.container_subtitle2 {
+                height: 10mm;
+                margin-bottom: 10mm;
+                background-color: #fa8010;
+            }
+            
+            div.container_chart2 {
+                height: 83mm;
+                width: 95mm;
+                margin-left: 57mm;
+                background-color: green;
+            }
+            
+            
+        
+        """
+
         return stylesheet
 
     def create_content(self):
@@ -74,6 +137,19 @@ class ReportPdf:
             </tbody>
         </table>
         <img src ="{self.img_path}" width="300" height="200">"""
+
+        content = f"""<div class="container_page">
+            <div class="container_title"></div>
+            <div class="container_subtitle1"></div>
+            <div class="container_first_chart_section">
+                <div class="container_table"></div>
+                <div class="container_chart1"></div>
+            </div>
+            <div class="container_subtitle2"></div>
+            <div class="container_chart2"></div>
+ 
+        </div>
+        """
 
         return content
 
