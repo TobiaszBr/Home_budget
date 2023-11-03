@@ -14,7 +14,7 @@ class ReportPdf:
     def __init__(self, data):
         self.data = data
         self.report_date = date(
-            int(self.data["year"]), int(self.data.get("month", 1)), 1
+            int(self.data.get("year", 1)), int(self.data.get("month", 1)), 1
         )
         self.table_headers = []
         self.table_rows = []
@@ -35,6 +35,18 @@ class ReportPdf:
         )
         self.subtitle1 = "Summary in terms of amounts"
         self.subtitle2 = "Percentage share of a given category"
+        self.char_colors = [
+            "#2f4858",
+            "#3e6066",
+            "#597771",
+            "#7a8d7d",
+            "#9fa28e",
+            "#c4b7a6",
+            "#1c6960",
+            "#4a7964",
+            "#6d886c",
+            "#8e8272",
+        ]
 
         # call create methods
         self.create_table()
@@ -59,7 +71,7 @@ class ReportPdf:
             self.chart_axis_y.append(element["total"])
 
     def create_bar_chart(self):
-        plt.bar(self.chart_axis_x, self.chart_axis_y, width=0.5, color="#86af49")
+        plt.bar(self.chart_axis_x, self.chart_axis_y, width=0.5, color=self.char_colors)
         plt.grid(axis="y")
         plt.xticks(rotation=20, ha="right")
         plt.tight_layout()
@@ -71,15 +83,20 @@ class ReportPdf:
         plt.close()
 
     def create_pie_chart(self):
-        plt.pie(
+        patches, texts, autotexts = plt.pie(
             self.chart_axis_y,
             labels=self.chart_axis_x,
-            autopct=lambda pct: f"{pct:.1f}%",
+            autopct="%.1f%%",
+            colors=self.char_colors,
         )
+        for autotext in autotexts:
+            autotext.set_color("white")
+
         pie_chart_path = os.path.join(
             self.BASE_DIR, self.report_directory, self.pie_chart_name
         )
-        plt.savefig(pie_chart_path)
+
+        plt.savefig(pie_chart_path, bbox_inches="tight")
         self.pie_char_path = "file:\\\\" + pie_chart_path
         plt.close()
 
@@ -98,7 +115,7 @@ class ReportPdf:
                 height: 40mm;
                 margin-top: 0mm;
                 margin-bottom: 10mm;
-                background-color: #537c16;
+                background-color: #3e6066;
                 display: flex; 
                 justify-content: center; 
                 align-items: center; 
@@ -107,7 +124,7 @@ class ReportPdf:
             div.container_subtitle1 {
                 height: 10mm;
                 margin-bottom: 10mm;
-                background-color: #86af49;
+                background-color: #7a8d7d;
                 display: flex; 
                 justify-content: center; 
                 align-items: center; 
@@ -139,7 +156,7 @@ class ReportPdf:
             
             div.container_subtitle2 {
                 height: 10mm;
-                background-color: #86af49;
+                background-color: #7a8d7d;
                 margin-bottom: 10mm;
                 display: flex; 
                 justify-content: center; 
@@ -173,7 +190,7 @@ class ReportPdf:
             }
             
             thead {
-                background-color: #86af49;
+                background-color: #99b0a8;
                 color: white;
                 font-size: 26px;
             }

@@ -58,11 +58,14 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         response["data"] = queryset
 
         # Generate pdf report
-        try:
-            report_pdf = ReportPdf(response)
-            report_pdf.save_pdf()
-        except:
-            print("Something went wrong with generate pdf file.")
+        if response["data"]:
+            try:
+                report_pdf = ReportPdf(response)
+                report_pdf.save_pdf()
+            except:
+                print("Something went wrong with generate pdf file.")
+        else:
+            print("No data to create pdf report")
 
         return Response(response)
 
