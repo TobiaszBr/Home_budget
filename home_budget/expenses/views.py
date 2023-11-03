@@ -60,10 +60,11 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         try:
             # Needed for image - no size control?
-            # BASE_DIR = Path(__file__).resolve().parent.parent
-            # img_path = "file:\\\\" + os.path.join(BASE_DIR, 'report_pdf', 'pic_3.jpeg')
-            img_path = ""
-            report_pdf = ReportPdf(response, "report_pdf/report.pdf", img_path)
+            BASE_DIR = Path(__file__).resolve().parent.parent
+            img_path1 = "file:\\\\" + os.path.join(BASE_DIR, 'report_pdf', 'chart1.png')
+            img_path2 = "file:\\\\" + os.path.join(BASE_DIR, 'report_pdf', 'chart2.png')
+            #img_path = ""
+            report_pdf = ReportPdf(response, "report_pdf/report.pdf", img_path1, img_path2)
             report_pdf.save_pdf()
         except:
             print("Something went wrong with generate pdf file.")
