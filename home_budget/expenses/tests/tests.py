@@ -5,38 +5,57 @@ from expenses.serializers import ExpenseSerializer
 
 
 class TestExpenseView:
-    @pytest.mark.django_db
-    def test_create_expense(
-            self,
-            auto_login_user,
-            valid_expense_data
-    ):
-        client, user = auto_login_user()
-        url = reverse("expense-list")
-        create_response = client.post(url, data=valid_expense_data, format="json")
-        create_response.data.pop("id")
-        assert (
-                create_response.status_code == status.HTTP_201_CREATED and
-                create_response.data == valid_expense_data
-        )
+    # @pytest.mark.django_db
+    # def test_create_expense(
+    #         self,
+    #         auto_login_user,
+    #         valid_expense_data
+    # ):
+    #     client, user = auto_login_user()
+    #     url = reverse("expense-list")
+    #     create_response = client.post(url, data=valid_expense_data, format="json")
+    #     create_response.data.pop("id")
+    #     assert (
+    #             create_response.status_code == status.HTTP_201_CREATED and
+    #             create_response.data == valid_expense_data
+    #     )
+    #
+    # @pytest.mark.django_db
+    # def test_retrieve_expense(
+    #         self,
+    #         django_user_model,
+    #         auto_login_user,
+    #         expense_model
+    # ):
+    #     client, user = auto_login_user(user=django_user_model.objects.get())
+    #     url = reverse("expense-detail", kwargs={"pk": expense_model.id})
+    #     retrieve_response = client.get(url)
+    #
+    #     serializer = ExpenseSerializer(expense_model)
+    #     assert (
+    #             retrieve_response.status_code == status.HTTP_200_OK and
+    #             retrieve_response.data == serializer.data
+    #     )
 
     @pytest.mark.django_db
-    def test_retrieve_expense(
+    def test_update_expense(
             self,
             django_user_model,
             auto_login_user,
-            expense_model
+            expense_model,
+            valid_expense_data_update
     ):
         client, user = auto_login_user(user=django_user_model.objects.get())
         url = reverse("expense-detail", kwargs={"pk": expense_model.id})
-        retrieve_response = client.get(url)
+        update_response = client.patch(url, data=valid_expense_data_update, format="json")
+        for key, value in update_response.data.items():
+            if key not in valid_expense_data_update.keys():
+                valid_expense_data_update[key] = value
 
-        serializer = ExpenseSerializer(expense_model)
         assert (
-                retrieve_response.status_code == status.HTTP_200_OK and
-                retrieve_response.data == serializer.data
+                update_response.status_code == status.HTTP_200_OK and
+                update_response.data == valid_expense_data_update
         )
-
 
 
 

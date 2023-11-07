@@ -43,6 +43,22 @@ def valid_expense_data():
     }
     return data
 
+@pytest.fixture
+def valid_expense_data_update():
+    data = {
+        "category": "Savings",
+        "subcategory": "Investment",
+        "amount": "1020.40",
+        "description": "Test description 2",
+        "date": "2023-02-04"
+    }
+    data = {
+        "category": "Savings",
+        "subcategory": "Investment",
+        "amount": "1020.40"
+    }
+    return data
+
 
 @pytest.fixture
 def expense_model(create_user, valid_expense_data):
