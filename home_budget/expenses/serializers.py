@@ -1,6 +1,7 @@
+from operator import xor
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .categories import CATEGORIES, SUBCATEGORIES_DICT
+from .categories import CATEGORIES, SUBCATEGORIES_DICT, SUBCATEGORIES_DICT_TUPLE
 from .models import Expense
 
 
@@ -16,23 +17,27 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Filter available subcategories based on given category - drf view
-        # To tymczasowo - trzeba zrobić tak, żeby sprawdzało zarówno dane wejściowe jeżeli są obie category i subcategory
-        # oraz musi sprawdzać możliwość zmiany jednego z nich i porównywać z tym co jest w modelu dla innego pola np jeżeli mam w danych category to
-        # sprawdzić z tym co jest w modelu dla subcategories. - ale zmiana jednego pola zawsze bd powodowała błąd, bo jeżeli mam już model zapisany,
-        # to tam category i sub sąze sobą ok, zmieniając tylko jedno byłby błąd więc zmiana jednego pola jest niemożliwa. Albo oba na raz albo wcale
+
+        # Validate given category with actual subcategory
+        if "category" in data.keys() and "subcategory" not in data.keys():
+            actual_subcategory = self.context["object_instance"].subcategory
+            if actual_subcategory not in SUBCATEGORIES_DICT[data["category"]]:
+                raise serializers.ValidationError(
+                    "Given category does not match actual subcategory")
+
+        # Validate given subcategory with actual category
+        if "subcategory" in data.keys() and "category" not in data.keys():
+            actual_category = self.context["object_instance"].category
+            if data["subcategory"] not in SUBCATEGORIES_DICT[actual_category]:
+                raise serializers.ValidationError(
+                    "Given subcategory does not match actual category")
+
+        # Validate given subcategory with given category
         if "category" in data.keys() and "subcategory" in data.keys():
-            self.fields["subcategory"].choices = SUBCATEGORIES_DICT[data["category"]]
-            # Validate subcategory with given category
-            if (
-                    not (data["subcategory"], data["subcategory"])
-                    in SUBCATEGORIES_DICT[data["category"]]
-            ):
+            self.fields["subcategory"].choices = SUBCATEGORIES_DICT_TUPLE[data["category"]]
+            if data["subcategory"] not in SUBCATEGORIES_DICT[data["category"]]:
                 raise serializers.ValidationError(
                     "Wrong subcategory for chosen category")
-
-        # temp do testów
-        if "object_instance" in self.context.keys():
-            print(self.context["object_instance"].category)
 
         return super().validate(data)
 

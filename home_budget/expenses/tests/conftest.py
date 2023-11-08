@@ -35,8 +35,8 @@ def auto_login_user(client, create_user, test_user_password):
 @pytest.fixture
 def valid_expense_data():
     data = {
-        "category": "Food",
-        "subcategory": "Fast food",
+        "category": "Savings",
+        "subcategory": "Investments",
         "amount": "12.40",
         "description": "Test description",
         "date": "2023-01-02"
@@ -46,16 +46,9 @@ def valid_expense_data():
 @pytest.fixture
 def valid_expense_data_update():
     data = {
-        "category": "Savings",
-        "subcategory": "Investment",
-        "amount": "1020.40",
-        "description": "Test description 2",
-        "date": "2023-02-04"
-    }
-    data = {
-        "category": "Savings",
-        "subcategory": "Investment",
-        "amount": "1020.40"
+        "category": "Food",
+        "subcategory": "Fast food",
+        "amount": "54.65"
     }
     return data
 
