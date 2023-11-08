@@ -43,14 +43,14 @@ def valid_expense_data():
     }
     return data
 
-@pytest.fixture
-def valid_expense_data_update():
-    data = {
-        "category": "Food",
-        "subcategory": "Fast food",
-        "amount": "54.65"
-    }
-    return data
+# @pytest.fixture
+# def valid_expense_data_update():
+#     data = {
+#         "category": "Food",
+#         "subcategory": "Fast food",
+#         "amount": "54.65"
+#     }
+#     return data
 
 
 @pytest.fixture

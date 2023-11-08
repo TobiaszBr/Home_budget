@@ -1,4 +1,3 @@
-from operator import xor
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .categories import CATEGORIES, SUBCATEGORIES_DICT, SUBCATEGORIES_DICT_TUPLE
@@ -16,8 +15,6 @@ class ExpenseSerializer(serializers.ModelSerializer):
         fields = ["id", "category", "subcategory", "amount", "date", "description"]
 
     def validate(self, data):
-        # Filter available subcategories based on given category - drf view
-
         # Validate given category with actual subcategory
         if "category" in data.keys() and "subcategory" not in data.keys():
             actual_subcategory = self.context["object_instance"].subcategory
@@ -34,6 +31,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
         # Validate given subcategory with given category
         if "category" in data.keys() and "subcategory" in data.keys():
+            # Filter available subcategories based on given category - drf view
             self.fields["subcategory"].choices = SUBCATEGORIES_DICT_TUPLE[data["category"]]
             if data["subcategory"] not in SUBCATEGORIES_DICT[data["category"]]:
                 raise serializers.ValidationError(
