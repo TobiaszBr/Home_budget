@@ -46,6 +46,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         return context
 
+    # "report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?"
     @action(detail=False, url_path="report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?")
     def report(self, request, year=None, month=None):
         # Additional year and month validation.

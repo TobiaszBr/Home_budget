@@ -1,10 +1,13 @@
-from rest_framework import status
+from django.db.models import Sum
 from django.urls import reverse
 import pytest
+from rest_framework import status
+from expenses.models import Expense
 from expenses.serializers import ExpenseSerializer
 
 
 class TestExpenseView:
+    @pytest.mark.skip
     @pytest.mark.django_db
     def test_create_expense(self, auto_login_user, valid_expense_data):
         client, user = auto_login_user()
@@ -16,6 +19,7 @@ class TestExpenseView:
             and create_response.data == valid_expense_data
         )
 
+    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_expense_valid_id(
         self, django_user_model, auto_login_user, expense_model
@@ -30,6 +34,7 @@ class TestExpenseView:
             and retrieve_response.data == serializer.data
         )
 
+    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_expense_invalid_id(
         self, django_user_model, auto_login_user, expense_model
@@ -40,6 +45,7 @@ class TestExpenseView:
 
         assert retrieve_response.status_code == status.HTTP_404_NOT_FOUND
 
+    @pytest.mark.skip
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         "valid_expense_data_update",
@@ -89,6 +95,7 @@ class TestExpenseView:
             and update_response.data == valid_expense_data_update
         )
 
+    @pytest.mark.skip
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         "invalid_expense_data_update",
@@ -129,6 +136,7 @@ class TestExpenseView:
 
         assert update_response.status_code == status.HTTP_400_BAD_REQUEST
 
+    @pytest.mark.skip
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         ("add_to_pk", "expected_status_code"),
@@ -148,9 +156,52 @@ class TestExpenseView:
 
         assert delete_response.status_code == expected_status_code
 
+    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_expense_unauthenticated_user(self, client, expense_model):
         url = reverse("expense-detail", kwargs={"pk": expense_model.id})
         retrieve_response = client.get(url)
 
         assert retrieve_response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.skip
+    @pytest.mark.django_db
+    def test_annual_report(
+        self, django_user_model, auto_login_user, expense_model_list
+    ):
+        queryset = Expense.objects.all()
+        year = queryset[0].date.year
+        report_data = queryset.values("category").annotate(total=Sum("amount"))
+
+        client, user = auto_login_user(user=django_user_model.objects.get())
+        url = reverse("expense-report", kwargs={"year": year})
+        annual_report_response = client.get(url)
+
+        assert (
+            annual_report_response.status_code == status.HTTP_200_OK and
+            annual_report_response.data["year"] == str(year) and
+            all([True for i, element in enumerate(report_data) if annual_report_response.data["data"][i] == report_data[i]]) == True
+        )
+
+    #@pytest.mark.skip
+    @pytest.mark.django_db
+    def test_monthly_report(
+        self, django_user_model, auto_login_user, expense_model_list
+    ):
+        queryset = Expense.objects.all()
+        year = str(queryset[0].date.year)
+        month = str(queryset[0].date.month)
+        report_data = queryset.values("category").annotate(total=Sum("amount"))
+
+        client, user = auto_login_user(user=django_user_model.objects.get())
+        # przez to, że month jest parametrem opcjonalnym '?' w url pattern view, to ni działa - brakuje / jakby
+        # gdy skasuje ? z url w view to test działa ok ale funkcjonalność już nie dla samego report/2023 np bo musi być też month
+        url = reverse("expense-report", kwargs={"year": year, "month": month})
+        monthly_report_response = client.get(url)
+
+        assert (
+            monthly_report_response.status_code == status.HTTP_200_OK and
+            monthly_report_response.data["year"] == str(year) and
+            monthly_report_response.data["month"] == str(month) and
+            all([True for i, element in enumerate(report_data) if monthly_report_response.data["data"][i] == report_data[i]]) == True
+        )

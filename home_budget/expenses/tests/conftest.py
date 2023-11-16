@@ -1,4 +1,6 @@
+from random import randint
 import pytest
+from expenses.categories import SUBCATEGORIES_DICT
 from expenses.models import Expense
 
 
@@ -53,3 +55,33 @@ def expense_model(create_user, valid_expense_data):
     valid_expense_data["user"] = user
     expense = Expense.objects.create(**valid_expense_data)
     return expense
+
+@pytest.fixture
+def valid_expenses_data_list_for_report():
+    data_list = []
+    for month in range(1, 13):
+        for category in SUBCATEGORIES_DICT.keys():
+            day = randint(1, 28)
+            amount = randint(1, 1000)
+            subcategory = SUBCATEGORIES_DICT[category][0][0]
+
+            data = {
+                "category": category,
+                "subcategory": subcategory,
+                "amount": amount,
+                "date": f"2023-{month}-{day}",
+                "description": f"Test description"
+            }
+            data_list.append(data)
+
+    return data_list
+
+@pytest.fixture
+def expense_model_list(create_user, valid_expenses_data_list_for_report):
+    model_list = []
+    user = create_user(username="User1")
+    for expense_data in valid_expenses_data_list_for_report:
+        expense_data["user"] = user
+        expense = Expense.objects.create(**expense_data)
+        model_list.append(expense)
+    return model_list
