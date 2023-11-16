@@ -1,9 +1,8 @@
 from django.contrib import admin
-from .models import Expense, ExpenseForm
+from .models import Expense
 
 
 class ExpenseAdmin(admin.ModelAdmin):
-    form = ExpenseForm
     fields = ["category", "subcategory", "amount", "date", "description"]
 
 

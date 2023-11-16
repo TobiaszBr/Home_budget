@@ -1,15 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .categories import CATEGORIES, SUBCATEGORIES_DICT, SUBCATEGORIES_DICT_TUPLE
+from .categories import SUBCATEGORIES_DICT
 from .models import Expense
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
-    category = serializers.ChoiceField(
-        choices=CATEGORIES,
-        style={"template": "templates/expenses/select_onchange_submit.html"},
-    )
-
     class Meta:
         model = Expense
         fields = ["id", "category", "subcategory", "amount", "date", "description"]
@@ -32,7 +27,6 @@ class ExpenseSerializer(serializers.ModelSerializer):
         # Validate given subcategory with given category
         if "category" in data.keys() and "subcategory" in data.keys():
             # Filter available subcategories based on given category - drf view
-            self.fields["subcategory"].choices = SUBCATEGORIES_DICT_TUPLE[data["category"]]
             if data["subcategory"] not in SUBCATEGORIES_DICT[data["category"]]:
                 raise serializers.ValidationError(
                     "Wrong subcategory for chosen category")

@@ -36,11 +36,15 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         return Expense.objects.filter(user=self.request.user)
 
     def get_serializer_context(self):
-         context = super().get_serializer_context()
-         if "pk" in self.kwargs.keys():
+        context = super().get_serializer_context()
+        #if "pk" in self.kwargs.keys():
+        try:
             object_instance = self.get_object()
             context["object_instance"] = object_instance
-         return context
+        except:
+            pass
+
+        return context
 
     @action(detail=False, url_path="report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?")
     def report(self, request, year=None, month=None):

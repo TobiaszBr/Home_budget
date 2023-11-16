@@ -21,17 +21,37 @@ if auth_response.status_code == 200:
     }
     endpoint = "http://localhost:8000/api/expenses/"
 
-    endpoint_patch = "http://localhost:8000/api/expenses/1/"
+    endpoint_patch = "http://localhost:8000/api/expenses/518/"
 
-    data = {
-        "subcategory": "Financial cushion",
+    patch_data = {
+        "category": "Food",
+        "subcategory": "Fast food"
     }
 
-    # patch response
-    patch_response = requests.patch(endpoint_patch, json=data, headers=headers)
+    post_data = {
+        "category": "Savings",
+        "subcategory": "Financial cushion",
+        "amount": "123.4",
+        "date": f"2023-11-01",
+        "description": f"Test description"
+    }
+
+    put_data = {
+        "category": "Food",
+        "subcategory": "Fast food",
+        "amount": "443",
+        "date": f"2023-11-02",
+        "description": f"Test description 2"
+    }
 
     # post response
-    #post_response = requests.post(endpoint, json=data, headers=headers)
+    #post_response = requests.post(endpoint, json=post_data, headers=headers)
+
+    # patch response
+    #patch_response = requests.patch(endpoint_patch, json=patch_data, headers=headers)
+
+    # put response
+    put_response = requests.put(endpoint_patch, json=put_data, headers=headers)
 
     # i = 1
     # for year in range(2019, 2023):
