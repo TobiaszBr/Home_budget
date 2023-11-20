@@ -183,7 +183,6 @@ class TestExpenseView:
             all([True for i, element in enumerate(report_data) if annual_report_response.data["data"][i] == report_data[i]]) == True
         )
 
-    #@pytest.mark.skip
     @pytest.mark.django_db
     def test_monthly_report(
         self, django_user_model, auto_login_user, expense_model_list
@@ -194,8 +193,6 @@ class TestExpenseView:
         report_data = queryset.values("category").annotate(total=Sum("amount"))
 
         client, user = auto_login_user(user=django_user_model.objects.get())
-        # przez to, że month jest parametrem opcjonalnym '?' w url pattern view, to ni działa - brakuje / jakby
-        # gdy skasuje ? z url w view to test działa ok ale funkcjonalność już nie dla samego report/2023 np bo musi być też month
         url = reverse("expense-report", kwargs={"year": year, "month": month})
         monthly_report_response = client.get(url)
 

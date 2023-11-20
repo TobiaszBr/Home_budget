@@ -10,5 +10,6 @@ router.register(r"expenses", views.ExpenseViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/", obtain_auth_token),
-    path("users/", views.UsersListAPIView.as_view(), name="users")
+    path("users/", views.UsersListAPIView.as_view(), name="users"),
+    path("temp/", views.PDFHandler.as_view(), name="temp"),
 ]

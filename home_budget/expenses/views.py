@@ -1,4 +1,4 @@
-import sys
+import os, sys
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -37,7 +37,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        #if "pk" in self.kwargs.keys():
         try:
             object_instance = self.get_object()
             context["object_instance"] = object_instance
@@ -46,8 +45,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         return context
 
-    # "report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?"
-    @action(detail=False, url_path="report/(?P<year>[0-9]+)/?(?P<month>[0-9]+)?")
+    @action(detail=False, url_path="report/(?P<year>[0-9]+)(?:/(?P<month>[0-9]+))?")
     def report(self, request, year=None, month=None):
         # Additional year and month validation.
         if int(year) == 0:
@@ -74,12 +72,35 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             try:
                 report_pdf = ReportPdf(response)
                 report_pdf.save_pdf()
+                cwd_path = os.getcwd()
+                # może da się dobrać do ścieżki poprzez instancję report_pdf?
+                file_path = os.path.join(cwd_path, "report_pdf", "report.pdf")
+                response["report_url"] = file_path
             except:
                 print("Something went wrong with generate pdf file.")
         else:
             print("No data to create pdf report")
 
         return Response(response)
+
+
+from rest_framework import status
+from rest_framework.views import APIView
+from drf_pdf.response import PDFFileResponse
+from .renderers import PDFRendererCustom
+
+
+class PDFHandler(APIView):
+    renderer_classes = (PDFRendererCustom,)
+
+    def get(self, request):
+        cwd_path = os.getcwd()
+        file_path = os.path.join(cwd_path, "report_pdf", "report.pdf")
+        response = PDFFileResponse(
+            file_path=file_path,
+            status=status.HTTP_200_OK
+        )
+        return response
 
 
 class UsersListAPIView(generics.ListAPIView):
