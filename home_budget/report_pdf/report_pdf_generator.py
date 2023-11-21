@@ -19,7 +19,9 @@ class ReportPdf:
         self.table_headers = []
         self.table_rows = []
         self.report_directory = "report_pdf"
-        self.report_name = "report.pdf"
+        self.report_name = "report_pdf"
+        #self.report_name = f"report_{self.report_year}_{self.report_month}.pdf"
+        self.report_save_path = os.path.join(self.report_directory, self.report_name)
         self.bar_chart_name = "bar_chart.jpg"
         self.pie_chart_name = "pie_chart.jpg"
         self.chart_axis_x = []
@@ -235,5 +237,4 @@ class ReportPdf:
     def save_pdf(self):
         html = HTML(string=self.content)
         css = CSS(string=self.stylesheet)
-        report_save_path = os.path.join(self.report_directory, self.report_name)
-        html.write_pdf(report_save_path, stylesheets=[css])
+        html.write_pdf(self.report_save_path, stylesheets=[css])

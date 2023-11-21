@@ -6,6 +6,7 @@ from rest_framework import authentication, generics, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
 from .serializers import ExpenseSerializer, ExpenseReportSerializer, UserSerializer
@@ -48,15 +49,15 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     @action(detail=False, url_path="report/(?P<year>[0-9]+)(?:/(?P<month>[0-9]+))?")
     def report(self, request, year=None, month=None):
         # Additional year and month validation.
-        if int(year) == 0:
-            return Response("Year cannot be 0.", status=HTTP_400_BAD_REQUEST)
+        if int(year) <= 0:
+            return Response("Year cannot be less than 1.", status=HTTP_400_BAD_REQUEST)
 
-        if month and (int(month) == 0 or int(month) > 12):
+        if month and (int(month) <= 0 or int(month) > 12):
             return Response(
                 "Month should be from range 1-12.", status=HTTP_400_BAD_REQUEST
             )
 
-        # Filter database and create response
+        # Filter database and create response:
         if not month:
             q = Q(date__year=year)
         else:
@@ -70,36 +71,43 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             try:
                 report_pdf = ReportPdf(data)
                 report_pdf.save_pdf()
-                cwd_path = os.getcwd()
-                # może da się dobrać do ścieżki poprzez instancję report_pdf?
-                file_path = os.path.join(cwd_path, "report_pdf", "report.pdf")
-                data["report_url"] = file_path
+                data["report_pdf"] = reverse("show_report", request=request)
             except:
-                print("Something went wrong with generate pdf file.")
+                print("Something went wrong with generating the pdf file.")
         else:
+            data["report_pdf"] = None
             print("No data to create pdf report")
 
         serializer = ExpenseReportSerializer(data)
         return Response(serializer.data)
 
 
+
+
+
 from rest_framework import status
 from rest_framework.views import APIView
 from drf_pdf.response import PDFFileResponse
 from .renderers import PDFRendererCustom
+from rest_framework.renderers import JSONRenderer
 
 
-class PDFHandler(APIView):
-    renderer_classes = (PDFRendererCustom,)
+class ShowReportAPIView(APIView):
+    authentication_classes = [
+        authentication.SessionAuthentication,
+        authentication.TokenAuthentication,
+    ]
+    permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = (PDFRendererCustom, JSONRenderer)
 
     def get(self, request):
         cwd_path = os.getcwd()
-        file_path = os.path.join(cwd_path, "report_pdf", "report.pdf")
-        response = PDFFileResponse(
+        file_path = os.path.join(cwd_path, "report_pdf", "report_pdf")
+
+        return PDFFileResponse(
             file_path=file_path,
             status=status.HTTP_200_OK
         )
-        return response
 
 
 class UsersListAPIView(generics.ListAPIView):
