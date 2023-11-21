@@ -13,9 +13,9 @@ matplotlib.use("Agg")
 class ReportPdf:
     def __init__(self, data):
         self.data = data
-        self.report_date = date(
-            int(self.data.get("year", 1)), int(self.data.get("month", 1)), 1
-        )
+        self.report_year = int(self.data.get("year", 1))
+        self.report_month = int(self.data["month"]) if self.data["month"] else 1
+        self.report_date = date(self.report_year, self.report_month, 1)
         self.table_headers = []
         self.table_rows = []
         self.report_directory = "report_pdf"

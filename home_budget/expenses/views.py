@@ -8,7 +8,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
-from .serializers import ExpenseSerializer, UserSerializer
+from .serializers import ExpenseSerializer, ExpenseReportSerializer, UserSerializer
 
 sys.path.insert(
     0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
@@ -59,29 +59,28 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         # Filter database and create response
         if not month:
             q = Q(date__year=year)
-            response = dict(year=year)
         else:
             q = Q(date__year=year, date__month=month)
-            response = dict(year=year, month=month)
         queryset = self.get_queryset().filter(q).values("category")
         queryset = queryset.annotate(total=Sum("amount"))
-        response["data"] = queryset
+        data = {"year": year, "month": month, "data": queryset}
 
-        # Generate pdf report
-        if response["data"]:
+        # # Generate pdf report
+        if queryset:
             try:
-                report_pdf = ReportPdf(response)
+                report_pdf = ReportPdf(data)
                 report_pdf.save_pdf()
                 cwd_path = os.getcwd()
                 # może da się dobrać do ścieżki poprzez instancję report_pdf?
                 file_path = os.path.join(cwd_path, "report_pdf", "report.pdf")
-                response["report_url"] = file_path
+                data["report_url"] = file_path
             except:
                 print("Something went wrong with generate pdf file.")
         else:
             print("No data to create pdf report")
 
-        return Response(response)
+        serializer = ExpenseReportSerializer(data)
+        return Response(serializer.data)
 
 
 from rest_framework import status

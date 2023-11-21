@@ -34,6 +34,17 @@ class ExpenseSerializer(serializers.ModelSerializer):
         return super().validate(data)
 
 
+class ExpenseReportSerializer(serializers.Serializer):
+    year = serializers.CharField(max_length=4)
+    month = serializers.CharField(max_length=2)
+    report_url = serializers.URLField()     #URLField() #FilePathField ? Hyperlink
+    data = serializers.JSONField()
+
+
+    class Meta:
+        fields = ["year", "month", "report_url", "data"]
+
+
 class UserSerializer(serializers.ModelSerializer):
     expenses = ExpenseSerializer(many=True, read_only=True)
 
