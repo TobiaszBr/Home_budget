@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from .categories import SUBCATEGORIES_DICT
-from .models import Expense
+from .models import Expense, Report
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
@@ -42,6 +42,12 @@ class ExpenseReportSerializer(serializers.Serializer):
     data = serializers.JSONField(allow_null=True)
 
     class Meta:
+        fields = ["year", "month", "report_pdf", "data"]
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
         fields = ["year", "month", "report_pdf", "data"]
 
 

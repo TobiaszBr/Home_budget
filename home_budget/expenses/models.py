@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.core.validators import DecimalValidator, MinValueValidator
+from django.core.validators import DecimalValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from .categories import CATEGORIES, SUBCATEGORIES
@@ -17,3 +17,27 @@ class Expense(models.Model):
     date = models.DateField(default=timezone.now().date())
     user = models.ForeignKey(User, related_name="expenses", on_delete=models.CASCADE)
     description = models.TextField(max_length=100)
+
+
+# def user_directory_path(instance, filename):
+#     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+#     return f"user_{instance.user.id}/{filename}"
+
+
+class Report(models.Model):
+    user = models.ForeignKey(User, related_name="report", on_delete=models.CASCADE)
+    year = models.IntegerField(
+        validators=[
+            MinValueValidator(limit_value=2000),
+            MaxValueValidator(limit_value=3000)
+        ]
+    )
+    month = models.IntegerField(
+        validators=[
+            MinValueValidator(limit_value=1),
+            MaxValueValidator(limit_value=12)
+        ]
+    )
+    #report_pdf = models.FileField(upload_to=user_directory_path)
+    report_pdf = models.URLField()
+    data = models.JSONField()

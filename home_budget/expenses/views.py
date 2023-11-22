@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from .models import Expense
-from .serializers import ExpenseSerializer, ExpenseReportSerializer, UserSerializer
+from .serializers import ExpenseSerializer, ExpenseReportSerializer, UserSerializer, ReportSerializer
 
 sys.path.insert(
     0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
@@ -69,16 +69,17 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         # # Generate pdf report
         if queryset:
             try:
-                report_pdf = ReportPdf(data)
+                report_pdf = ReportPdf(data, user=self.request.user)
                 report_pdf.save_pdf()
-                data["report_pdf"] = reverse("show_report", request=request)
+                data["report_pdf"] = reverse("show_report", request=request, kwargs={"year": year, "month": month})
             except:
                 print("Something went wrong with generating the pdf file.")
         else:
             data["report_pdf"] = None
             print("No data to create pdf report")
 
-        serializer = ExpenseReportSerializer(data)
+        #serializer = ExpenseReportSerializer(data)
+        serializer = ReportSerializer(data)
         return Response(serializer.data)
 
 
@@ -100,9 +101,10 @@ class ShowReportAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     renderer_classes = (PDFRendererCustom, JSONRenderer)
 
-    def get(self, request):
+    def get(self, request, year, month):
         cwd_path = os.getcwd()
-        file_path = os.path.join(cwd_path, "report_pdf", "report_pdf")
+        file_name = f"report_user_id_{self.request.user.id}_{year}_{month}.pdf"
+        file_path = os.path.join(cwd_path, "report_pdf", file_name)
 
         return PDFFileResponse(
             file_path=file_path,
