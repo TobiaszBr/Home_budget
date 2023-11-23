@@ -34,6 +34,8 @@ class Report(models.Model):
         ]
     )
     month = models.IntegerField(
+        blank=True,
+        null=True,
         validators=[MinValueValidator(limit_value=1), MaxValueValidator(limit_value=12)]
     )
     show_report_url = models.URLField(blank=True, null=True)

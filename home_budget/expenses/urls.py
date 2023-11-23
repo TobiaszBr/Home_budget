@@ -14,7 +14,12 @@ urlpatterns = [
     path("users/", views.UsersListAPIView.as_view(), name="users"),
     path(
         "show_report/<int:year>/<int:month>/",
-        views.ShowReportPdfAPIView.as_view(),
-        name="show_report",
+        views.ShowMonthlyReportPdfAPIView.as_view(),
+        name="show_monthly_report",
+    ),
+    path(
+        "show_report/<int:year>/",
+        views.ShowAnnualReportPdfAPIView.as_view(),
+        name="show_annual_report",
     ),
 ]

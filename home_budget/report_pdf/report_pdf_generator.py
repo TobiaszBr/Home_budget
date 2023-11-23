@@ -14,13 +14,16 @@ class ReportPdf:
     def __init__(self, data, user):
         self.data = data
         self.user = user
-        self.report_year = int(self.data.get("year", 1))
+        self.report_year = int(self.data["year"])
         self.report_month = int(self.data["month"]) if self.data["month"] else 1
         self.report_date = date(self.report_year, self.report_month, 1)
         self.table_headers = []
         self.table_rows = []
         self.report_directory = "report_pdf"
-        self.report_name = f"report_user_id_{self.user.id}_{self.report_year}_{self.report_month}.pdf"
+        if self.data["month"]:
+            self.report_name = f"report_user_id_{self.user.id}_{self.report_year}_{self.report_month}.pdf"
+        else:
+            self.report_name = f"report_user_id_{self.user.id}_{self.report_year}.pdf"
         self.report_save_path = os.path.join(self.report_directory, self.report_name)
         self.bar_chart_name = "bar_chart.jpg"
         self.pie_chart_name = "pie_chart.jpg"

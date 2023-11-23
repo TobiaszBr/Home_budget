@@ -1,14 +1,11 @@
 import os, sys
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 from drf_pdf.response import PDFFileResponse
 from rest_framework import authentication, generics, permissions, status, viewsets
-from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from .models import Expense, Report
@@ -20,6 +17,7 @@ from .serializers import (
     ExpenseReportQuerysetSerializer,
 )
 from .viewsets import ModelViewSetWithoutEditing
+
 
 # ToDo and check
 sys.path.insert(
@@ -65,8 +63,8 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         return context
 
-
-class ShowReportPdfAPIView(APIView):
+# zastanowić się czy nie da się tych 2 klas zrobić jako jedno z opcjonalnym argumentem do path month bo tak to dużo powtarzania
+class ShowMonthlyReportPdfAPIView(APIView):
     authentication_classes = [
         authentication.SessionAuthentication,
         authentication.TokenAuthentication,
@@ -75,10 +73,33 @@ class ShowReportPdfAPIView(APIView):
     renderer_classes = (PDFRendererCustom,)
 
     def get(self, request, year, month):
-        # myślę, że to też niepotrzebne - przekaż w parametrach jakoś może report_save_path???
-        cwd_path = os.getcwd()
-        file_name = f"report_user_id_{self.request.user.id}_{year}_{month}.pdf"
-        file_path = os.path.join(cwd_path, "report_pdf", file_name)
+        report_instance = get_object_or_404(
+            Report,
+            user=self.request.user,
+            year=year,
+            month=month
+        )
+        file_path = os.path.join(report_instance.report_save_path)
+
+        return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
+
+
+class ShowAnnualReportPdfAPIView(APIView):
+    authentication_classes = [
+        authentication.SessionAuthentication,
+        authentication.TokenAuthentication,
+    ]
+    permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = (PDFRendererCustom,)
+
+    def get(self, request, year):
+        report_instance = get_object_or_404(
+            Report,
+            user=self.request.user,
+            year=year,
+            month=None
+        )
+        file_path = os.path.join(report_instance.report_save_path)
 
         return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
 
@@ -113,11 +134,18 @@ class ReportViewSet(ModelViewSetWithoutEditing):
             try:
                 report_pdf = ReportPdf(make_report_data, user=self.request.user)
                 report_pdf.save_pdf()
-                show_report_url = reverse(
-                    "show_report",
-                    request=self.request,
-                    kwargs={"year": year, "month": month},
-                )
+                if month:
+                    show_report_url = reverse(
+                        "show_monthly_report",
+                        request=self.request,
+                        kwargs={"year": year, "month": month},
+                    )
+                else:
+                    show_report_url = reverse(
+                        "show_annual_report",
+                        request=self.request,
+                        kwargs={"year": year},
+                    )
                 report_save_path = report_pdf.report_save_path
             except:
                 show_report_url = None
