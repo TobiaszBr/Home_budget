@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from .categories import SUBCATEGORIES_DICT
 from .models import Expense, Report
 
@@ -45,7 +46,14 @@ class ExpenseReportQuerysetSerializer(serializers.Serializer):
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["year", "month", "report_pdf", "data"]
+        fields = ["id", "year", "month", "show_report_url", "data"]
+        read_only_fields = ("show_report_url", "data",)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Report.objects.all(),
+                fields=["year", "month"]
+            )
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):

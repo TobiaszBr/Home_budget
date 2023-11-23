@@ -17,14 +17,16 @@ from .serializers import (
     ExpenseSerializer,
     UserSerializer,
     ReportSerializer,
-    ExpenseReportQuerysetSerializer
+    ExpenseReportQuerysetSerializer,
 )
+from .viewsets import ModelViewSetWithoutEditing
 
 # ToDo and check
 sys.path.insert(
     0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
 )
 from report_pdf_generator import ReportPdf
+
 # ToDo and check
 
 
@@ -63,52 +65,52 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         return context
 
-    @action(detail=False, url_path="report/(?P<year>[0-9]+)(?:/(?P<month>[0-9]+))?")
-    def report(self, request, year=None, month=None):
-        # Additional year and month validation.
-        if int(year) <= 0:
-            return Response("Year cannot be less than 1.", status=status.HTTP_400_BAD_REQUEST)
-
-        if month and (int(month) <= 0 or int(month) > 12):
-            return Response(
-                "Month should be from range 1-12.", status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            report_instance = Report.objects.get(year=year, month=month)
-            serializer = ReportSerializer(report_instance)
-        except ObjectDoesNotExist:
-            # Filter database and create response:
-            if not month:
-                q = Q(date__year=year)
-            else:
-                q = Q(date__year=year, date__month=month)
-            queryset = self.get_queryset().filter(q).values("category")
-            queryset = queryset.annotate(total=Sum("amount"))
-            data = {"year": year, "month": month, "data": queryset}
-
-            # # Generate pdf report
-            if queryset:
-                try:
-                    report_pdf = ReportPdf(data, user=self.request.user)
-                    report_pdf.save_pdf()
-                    data["report_pdf"] = reverse("show_report", request=request, kwargs={"year": year, "month": month})
-                except:
-                    print("Something went wrong with generating the pdf file.")
-            else:
-                data["report_pdf"] = None
-                print("No data to create pdf report")
-
-            queryset_serializer = ExpenseReportQuerysetSerializer(queryset, many=True)
-
-            data["data"] = queryset_serializer.data
-            serializer = ReportSerializer(data=data)
-
-            # create Report model instance
-            if serializer.is_valid(raise_exception=True):
-                serializer.save(user=self.request.user)
-
-        return Response(serializer.data)
+    # @action(detail=False, url_path="report/(?P<year>[0-9]+)(?:/(?P<month>[0-9]+))?")
+    # def report(self, request, year=None, month=None):
+    #     # Additional year and month validation.
+    #     if int(year) <= 0:
+    #         return Response("Year cannot be less than 1.", status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     if month and (int(month) <= 0 or int(month) > 12):
+    #         return Response(
+    #             "Month should be from range 1-12.", status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #
+    #     try:
+    #         report_instance = Report.objects.get(year=year, month=month)
+    #         serializer = ReportSerializer(report_instance)
+    #     except ObjectDoesNotExist:
+    #         # Filter database and create response:
+    #         if not month:
+    #             q = Q(date__year=year)
+    #         else:
+    #             q = Q(date__year=year, date__month=month)
+    #         queryset = self.get_queryset().filter(q).values("category")
+    #         queryset = queryset.annotate(total=Sum("amount"))
+    #         data = {"year": year, "month": month, "data": queryset}
+    #
+    #         # # Generate pdf report
+    #         if queryset:
+    #             try:
+    #                 report_pdf = ReportPdf(data, user=self.request.user)
+    #                 report_pdf.save_pdf()
+    #                 data["report_pdf"] = reverse("show_report", request=request, kwargs={"year": year, "month": month})
+    #             except:
+    #                 print("Something went wrong with generating the pdf file.")
+    #         else:
+    #             data["report_pdf"] = None
+    #             print("No data to create pdf report")
+    #
+    #         queryset_serializer = ExpenseReportQuerysetSerializer(queryset, many=True)
+    #
+    #         data["data"] = queryset_serializer.data
+    #         serializer = ReportSerializer(data=data)
+    #
+    #         # create Report model instance
+    #         if serializer.is_valid(raise_exception=True):
+    #             serializer.save(user=self.request.user)
+    #
+    #     return Response(serializer.data)
 
 
 class ShowReportPdfAPIView(APIView):
@@ -124,13 +126,10 @@ class ShowReportPdfAPIView(APIView):
         file_name = f"report_user_id_{self.request.user.id}_{year}_{month}.pdf"
         file_path = os.path.join(cwd_path, "report_pdf", file_name)
 
-        return PDFFileResponse(
-            file_path=file_path,
-            status=status.HTTP_200_OK
-        )
+        return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
 
 
-class ReportListAPIView(generics.ListAPIView):
+class ReportViewSet(ModelViewSetWithoutEditing):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     authentication_classes = [
@@ -141,3 +140,54 @@ class ReportListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Report.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        year = self.request.data.get("year", None)
+        month = self.request.data.get("month", None)
+
+        # Search for Expenses data to make a report:
+        if not month:
+            q = Q(date__year=year)
+        else:
+            q = Q(date__year=year, date__month=month)
+        expense_queryset = Expense.objects.filter(q).values("category")
+        expense_queryset = expense_queryset.annotate(total=Sum("amount"))
+        make_report_data = {"year": year, "month": month, "data": expense_queryset}
+
+        # # Generate pdf report
+        if expense_queryset:
+            try:
+                report_pdf = ReportPdf(make_report_data, user=self.request.user)
+                report_pdf.save_pdf()
+                show_report_url = reverse(
+                    "show_report",
+                    request=self.request,
+                    kwargs={"year": year, "month": month},
+                )
+                report_save_path = report_pdf.report_save_path
+            except:
+                show_report_url = None
+                report_save_path = None
+                print("Something went wrong with generating the pdf file.")
+        else:
+            show_report_url = None
+            report_save_path = None
+            print("No data to create pdf report")
+
+        expense_queryset_serializer = ExpenseReportQuerysetSerializer(
+            expense_queryset, many=True
+        )
+        serializer.save(
+            user=self.request.user,
+            show_report_url=show_report_url,
+            data=expense_queryset_serializer.data,
+            report_save_path=report_save_path,
+        )
+
+    def perform_destroy(self, instance):
+        # Delete also particular report_pdf file
+        report_delete_path = instance.report_save_path
+        if os.path.isfile(report_delete_path):
+            os.remove(report_delete_path)
+
+        instance.delete()

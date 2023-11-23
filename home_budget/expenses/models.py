@@ -36,5 +36,6 @@ class Report(models.Model):
     month = models.IntegerField(
         validators=[MinValueValidator(limit_value=1), MaxValueValidator(limit_value=12)]
     )
-    report_pdf = models.URLField(blank=True, null=True)
+    show_report_url = models.URLField(blank=True, null=True)
     data = models.JSONField()
+    report_save_path = models.CharField(max_length=100, null=True)

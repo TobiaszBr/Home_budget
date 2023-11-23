@@ -6,11 +6,15 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r"expenses", views.ExpenseViewSet)
+router.register(r"reports", views.ReportViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/", obtain_auth_token),
     path("users/", views.UsersListAPIView.as_view(), name="users"),
-    path("reports/", views.ReportListAPIView.as_view(), name="reports"),
-    path("show_report/<int:year>/<int:month>/", views.ShowReportPdfAPIView.as_view(), name="show_report"),
+    path(
+        "show_report/<int:year>/<int:month>/",
+        views.ShowReportPdfAPIView.as_view(),
+        name="show_report",
+    ),
 ]
