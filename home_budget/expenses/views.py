@@ -3,19 +3,35 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import authentication, generics, viewsets, permissions
+from drf_pdf.response import PDFFileResponse
+from rest_framework import authentication, generics, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.views import APIView
 from .models import Expense, Report
-from .serializers import ExpenseSerializer, UserSerializer, ReportSerializer, ExpenseReportQuerysetSerializer
+from .renderers import PDFRendererCustom
+from .serializers import (
+    ExpenseSerializer,
+    UserSerializer,
+    ReportSerializer,
+    ExpenseReportQuerysetSerializer
+)
 
+# ToDo and check
 sys.path.insert(
     0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
 )
 from report_pdf_generator import ReportPdf
+# ToDo and check
+
+
+class UsersListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.IsAdminUser]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
 
 
 class ExpenseViewSet(viewsets.ModelViewSet):
@@ -51,13 +67,12 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     def report(self, request, year=None, month=None):
         # Additional year and month validation.
         if int(year) <= 0:
-            return Response("Year cannot be less than 1.", status=HTTP_400_BAD_REQUEST)
+            return Response("Year cannot be less than 1.", status=status.HTTP_400_BAD_REQUEST)
 
         if month and (int(month) <= 0 or int(month) > 12):
             return Response(
-                "Month should be from range 1-12.", status=HTTP_400_BAD_REQUEST
+                "Month should be from range 1-12.", status=status.HTTP_400_BAD_REQUEST
             )
-
 
         try:
             report_instance = Report.objects.get(year=year, month=month)
@@ -93,18 +108,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             if serializer.is_valid(raise_exception=True):
                 serializer.save(user=self.request.user)
 
-
         return Response(serializer.data)
-
-
-
-
-
-from rest_framework import status, generics
-from rest_framework.views import APIView
-from drf_pdf.response import PDFFileResponse
-from .renderers import PDFRendererCustom
-from rest_framework.renderers import JSONRenderer
 
 
 class ShowReportPdfAPIView(APIView):
@@ -137,10 +141,3 @@ class ReportListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Report.objects.filter(user=self.request.user)
-
-
-
-class UsersListAPIView(generics.ListAPIView):
-    permission_classes = [permissions.IsAdminUser]
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
