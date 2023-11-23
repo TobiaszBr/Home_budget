@@ -19,11 +19,6 @@ class Expense(models.Model):
     description = models.TextField(max_length=100)
 
 
-# def user_directory_path(instance, filename):
-#     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-#     return f"user_{instance.user.id}/{filename}"
-
-
 class Report(models.Model):
     user = models.ForeignKey(User, related_name="report", on_delete=models.CASCADE)
     year = models.IntegerField(
@@ -38,6 +33,5 @@ class Report(models.Model):
             MaxValueValidator(limit_value=12)
         ]
     )
-    #report_pdf = models.FileField(upload_to=user_directory_path)
-    report_pdf = models.URLField()
+    report_pdf = models.URLField(blank=True, null=True)
     data = models.JSONField()

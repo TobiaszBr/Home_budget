@@ -20,10 +20,7 @@ class ReportPdf:
         self.table_headers = []
         self.table_rows = []
         self.report_directory = "report_pdf"
-        #self.report_directory = f"report_pdf/{self.user.id}"
-        #self.report_name = "report_pdf"
         self.report_name = f"report_user_id_{self.user.id}_{self.report_year}_{self.report_month}.pdf"
-        #self.report_name = f"report_{self.report_year}_{self.report_month}.pdf"
         self.report_save_path = os.path.join(self.report_directory, self.report_name)
         self.bar_chart_name = "bar_chart.jpg"
         self.pie_chart_name = "pie_chart.jpg"

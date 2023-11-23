@@ -1,5 +1,6 @@
 import os, sys
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import authentication, generics, viewsets, permissions
@@ -8,8 +9,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.status import HTTP_400_BAD_REQUEST
-from .models import Expense
-from .serializers import ExpenseSerializer, ExpenseReportSerializer, UserSerializer, ReportSerializer
+from .models import Expense, Report
+from .serializers import ExpenseSerializer, UserSerializer, ReportSerializer, ExpenseReportQuerysetSerializer
 
 sys.path.insert(
     0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
@@ -57,43 +58,56 @@ class ExpenseViewSet(viewsets.ModelViewSet):
                 "Month should be from range 1-12.", status=HTTP_400_BAD_REQUEST
             )
 
-        # Filter database and create response:
-        if not month:
-            q = Q(date__year=year)
-        else:
-            q = Q(date__year=year, date__month=month)
-        queryset = self.get_queryset().filter(q).values("category")
-        queryset = queryset.annotate(total=Sum("amount"))
-        data = {"year": year, "month": month, "data": queryset}
 
-        # # Generate pdf report
-        if queryset:
-            try:
-                report_pdf = ReportPdf(data, user=self.request.user)
-                report_pdf.save_pdf()
-                data["report_pdf"] = reverse("show_report", request=request, kwargs={"year": year, "month": month})
-            except:
-                print("Something went wrong with generating the pdf file.")
-        else:
-            data["report_pdf"] = None
-            print("No data to create pdf report")
+        try:
+            report_instance = Report.objects.get(year=year, month=month)
+            serializer = ReportSerializer(report_instance)
+        except ObjectDoesNotExist:
+            # Filter database and create response:
+            if not month:
+                q = Q(date__year=year)
+            else:
+                q = Q(date__year=year, date__month=month)
+            queryset = self.get_queryset().filter(q).values("category")
+            queryset = queryset.annotate(total=Sum("amount"))
+            data = {"year": year, "month": month, "data": queryset}
 
-        #serializer = ExpenseReportSerializer(data)
-        serializer = ReportSerializer(data)
+            # # Generate pdf report
+            if queryset:
+                try:
+                    report_pdf = ReportPdf(data, user=self.request.user)
+                    report_pdf.save_pdf()
+                    data["report_pdf"] = reverse("show_report", request=request, kwargs={"year": year, "month": month})
+                except:
+                    print("Something went wrong with generating the pdf file.")
+            else:
+                data["report_pdf"] = None
+                print("No data to create pdf report")
+
+            queryset_serializer = ExpenseReportQuerysetSerializer(queryset, many=True)
+
+            data["data"] = queryset_serializer.data
+            serializer = ReportSerializer(data=data)
+
+            # create Report model instance
+            if serializer.is_valid(raise_exception=True):
+                serializer.save(user=self.request.user)
+
+
         return Response(serializer.data)
 
 
 
 
 
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.views import APIView
 from drf_pdf.response import PDFFileResponse
 from .renderers import PDFRendererCustom
 from rest_framework.renderers import JSONRenderer
 
 
-class ShowReportAPIView(APIView):
+class ShowReportPdfAPIView(APIView):
     authentication_classes = [
         authentication.SessionAuthentication,
         authentication.TokenAuthentication,
@@ -110,6 +124,20 @@ class ShowReportAPIView(APIView):
             file_path=file_path,
             status=status.HTTP_200_OK
         )
+
+
+class ReportListAPIView(generics.ListAPIView):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    authentication_classes = [
+        authentication.SessionAuthentication,
+        authentication.TokenAuthentication,
+    ]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Report.objects.filter(user=self.request.user)
+
 
 
 class UsersListAPIView(generics.ListAPIView):

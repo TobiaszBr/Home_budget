@@ -11,5 +11,6 @@ urlpatterns = [
     path("", include(router.urls)),
     path("auth/", obtain_auth_token),
     path("users/", views.UsersListAPIView.as_view(), name="users"),
-    path("show_report/<int:year>/<int:month>/", views.ShowReportAPIView.as_view(), name="show_report"),
+    path("show_report/<int:year>/<int:month>/", views.ShowReportPdfAPIView.as_view(), name="show_report"),
+    path("reports/", views.ReportListAPIView.as_view(), name="reports"),
 ]
