@@ -65,53 +65,6 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
         return context
 
-    # @action(detail=False, url_path="report/(?P<year>[0-9]+)(?:/(?P<month>[0-9]+))?")
-    # def report(self, request, year=None, month=None):
-    #     # Additional year and month validation.
-    #     if int(year) <= 0:
-    #         return Response("Year cannot be less than 1.", status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     if month and (int(month) <= 0 or int(month) > 12):
-    #         return Response(
-    #             "Month should be from range 1-12.", status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #
-    #     try:
-    #         report_instance = Report.objects.get(year=year, month=month)
-    #         serializer = ReportSerializer(report_instance)
-    #     except ObjectDoesNotExist:
-    #         # Filter database and create response:
-    #         if not month:
-    #             q = Q(date__year=year)
-    #         else:
-    #             q = Q(date__year=year, date__month=month)
-    #         queryset = self.get_queryset().filter(q).values("category")
-    #         queryset = queryset.annotate(total=Sum("amount"))
-    #         data = {"year": year, "month": month, "data": queryset}
-    #
-    #         # # Generate pdf report
-    #         if queryset:
-    #             try:
-    #                 report_pdf = ReportPdf(data, user=self.request.user)
-    #                 report_pdf.save_pdf()
-    #                 data["report_pdf"] = reverse("show_report", request=request, kwargs={"year": year, "month": month})
-    #             except:
-    #                 print("Something went wrong with generating the pdf file.")
-    #         else:
-    #             data["report_pdf"] = None
-    #             print("No data to create pdf report")
-    #
-    #         queryset_serializer = ExpenseReportQuerysetSerializer(queryset, many=True)
-    #
-    #         data["data"] = queryset_serializer.data
-    #         serializer = ReportSerializer(data=data)
-    #
-    #         # create Report model instance
-    #         if serializer.is_valid(raise_exception=True):
-    #             serializer.save(user=self.request.user)
-    #
-    #     return Response(serializer.data)
-
 
 class ShowReportPdfAPIView(APIView):
     authentication_classes = [
@@ -119,9 +72,10 @@ class ShowReportPdfAPIView(APIView):
         authentication.TokenAuthentication,
     ]
     permission_classes = [permissions.IsAuthenticated]
-    renderer_classes = (PDFRendererCustom, JSONRenderer)
+    renderer_classes = (PDFRendererCustom,)
 
     def get(self, request, year, month):
+        # myślę, że to też niepotrzebne - przekaż w parametrach jakoś może report_save_path???
         cwd_path = os.getcwd()
         file_name = f"report_user_id_{self.request.user.id}_{year}_{month}.pdf"
         file_path = os.path.join(cwd_path, "report_pdf", file_name)
