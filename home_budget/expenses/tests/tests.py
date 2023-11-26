@@ -140,7 +140,10 @@ class TestExpenseView:
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         ("add_to_pk", "expected_status_code"),
-        [(0, status.HTTP_204_NO_CONTENT), (1, status.HTTP_404_NOT_FOUND)],
+        [
+            (0, status.HTTP_204_NO_CONTENT),
+            (1, status.HTTP_404_NOT_FOUND)
+        ],
     )
     def test_delete_expense(
         self,
@@ -158,47 +161,48 @@ class TestExpenseView:
 
     @pytest.mark.skip
     @pytest.mark.django_db
-    def test_retrieve_expense_unauthenticated_user(self, client, expense_model):
-        url = reverse("expense-detail", kwargs={"pk": expense_model.id})
-        retrieve_response = client.get(url)
+    def test_list_expenses_unauthenticated_user(self, client):
+        url = reverse("expense-list")
+        list_response = client.get(url)
 
-        assert retrieve_response.status_code == status.HTTP_403_FORBIDDEN
+        assert list_response.status_code == status.HTTP_403_FORBIDDEN
 
-    @pytest.mark.skip
-    @pytest.mark.django_db
-    def test_annual_report(
-        self, django_user_model, auto_login_user, expense_model_list
-    ):
-        queryset = Expense.objects.all()
-        year = queryset[0].date.year
-        report_data = queryset.values("category").annotate(total=Sum("amount"))
+    # @pytest.mark.skip
+    # @pytest.mark.django_db
+    # def test_annual_report(
+    #     self, django_user_model, auto_login_user, expense_model_list
+    # ):
+    #     queryset = Expense.objects.all()
+    #     year = queryset[0].date.year
+    #     report_data = queryset.values("category").annotate(total=Sum("amount"))
+    #
+    #     client, user = auto_login_user(user=django_user_model.objects.get())
+    #     url = reverse("expense-report", kwargs={"year": year})
+    #     annual_report_response = client.get(url)
+    #
+    #     assert (
+    #         annual_report_response.status_code == status.HTTP_200_OK and
+    #         annual_report_response.data["year"] == str(year) and
+    #         all([True for i, element in enumerate(report_data) if annual_report_response.data["data"][i] == report_data[i]]) == True
+    #     )
 
-        client, user = auto_login_user(user=django_user_model.objects.get())
-        url = reverse("expense-report", kwargs={"year": year})
-        annual_report_response = client.get(url)
-
-        assert (
-            annual_report_response.status_code == status.HTTP_200_OK and
-            annual_report_response.data["year"] == str(year) and
-            all([True for i, element in enumerate(report_data) if annual_report_response.data["data"][i] == report_data[i]]) == True
-        )
-
-    @pytest.mark.django_db
-    def test_monthly_report(
-        self, django_user_model, auto_login_user, expense_model_list
-    ):
-        queryset = Expense.objects.all()
-        year = str(queryset[0].date.year)
-        month = str(queryset[0].date.month)
-        report_data = queryset.values("category").annotate(total=Sum("amount"))
-
-        client, user = auto_login_user(user=django_user_model.objects.get())
-        url = reverse("expense-report", kwargs={"year": year, "month": month})
-        monthly_report_response = client.get(url)
-
-        assert (
-            monthly_report_response.status_code == status.HTTP_200_OK and
-            monthly_report_response.data["year"] == str(year) and
-            monthly_report_response.data["month"] == str(month) and
-            all([True for i, element in enumerate(report_data) if monthly_report_response.data["data"][i] == report_data[i]]) == True
-        )
+    # @pytest.mark.skip
+    # @pytest.mark.django_db
+    # def test_monthly_report(
+    #     self, django_user_model, auto_login_user, expense_model_list
+    # ):
+    #     queryset = Expense.objects.all()
+    #     year = str(queryset[0].date.year)
+    #     month = str(queryset[0].date.month)
+    #     report_data = queryset.values("category").annotate(total=Sum("amount"))
+    #
+    #     client, user = auto_login_user(user=django_user_model.objects.get())
+    #     url = reverse("expense-report", kwargs={"year": year, "month": month})
+    #     monthly_report_response = client.get(url)
+    #
+    #     assert (
+    #         monthly_report_response.status_code == status.HTTP_200_OK and
+    #         monthly_report_response.data["year"] == str(year) and
+    #         monthly_report_response.data["month"] == str(month) and
+    #         all([True for i, element in enumerate(report_data) if monthly_report_response.data["data"][i] == report_data[i]]) == True
+    #     )

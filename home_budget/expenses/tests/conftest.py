@@ -56,6 +56,7 @@ def expense_model(create_user, valid_expense_data):
     expense = Expense.objects.create(**valid_expense_data)
     return expense
 
+
 @pytest.fixture
 def valid_expenses_data_list_for_report():
     data_list = []
@@ -75,6 +76,7 @@ def valid_expenses_data_list_for_report():
             data_list.append(data)
 
     return data_list
+
 
 @pytest.fixture
 def expense_model_list(create_user, valid_expenses_data_list_for_report):
