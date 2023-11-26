@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from .categories import SUBCATEGORIES_DICT
@@ -54,6 +55,21 @@ class ReportSerializer(serializers.ModelSerializer):
                 fields=["year", "month"]
             )
         ]
+
+    def validate(self, data):
+        # check if the year is unique while there is no month,
+        if not data["month"]:
+            try:
+                instance = Report.objects.get(
+                    user=self.context["request"].user,
+                    year=data["year"],
+                    month=None
+                )
+            except ObjectDoesNotExist:
+                return data
+            raise serializers.ValidationError("Report with given data already exists.")
+        else:
+            return data
 
 
 class UserSerializer(serializers.ModelSerializer):

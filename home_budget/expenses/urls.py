@@ -1,6 +1,6 @@
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
-from django.urls import path, include
+from django.urls import include, path, re_path
 from . import views
 
 
@@ -12,14 +12,9 @@ urlpatterns = [
     path("", include(router.urls)),
     path("auth/", obtain_auth_token),
     path("users/", views.UsersListAPIView.as_view(), name="users"),
-    path(
-        "show_report/<int:year>/<int:month>/",
-        views.ShowMonthlyReportPdfAPIView.as_view(),
-        name="show_monthly_report",
-    ),
-    path(
-        "show_report/<int:year>/",
-        views.ShowAnnualReportPdfAPIView.as_view(),
-        name="show_annual_report",
+    re_path(
+        r"show_report/(?P<year>[0-9]+)(?:/(?P<month>[0-9]+))?",
+        views.ShowReportPdfAPIView.as_view(),
+        name="show_report"
     ),
 ]
