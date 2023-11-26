@@ -38,6 +38,15 @@ def auto_login_user(client, create_user, test_user_password):
 
 
 @pytest.fixture
+def auto_login_admin_user(client, create_user, test_user_password):
+    def make_auto_login():
+        admin_user = create_user(username="admin", is_staff=True)
+        client.login(username=admin_user.username, password=test_user_password)
+        return client, admin_user
+    return make_auto_login
+
+
+@pytest.fixture
 def valid_expense_data():
     data = {
         "category": "Savings",
@@ -58,32 +67,40 @@ def expense_model(create_user, valid_expense_data):
 
 
 @pytest.fixture
-def valid_expenses_data_list_for_report():
-    data_list = []
-    for month in range(1, 13):
-        for category in SUBCATEGORIES_DICT.keys():
-            day = randint(1, 28)
-            amount = randint(1, 1000)
-            subcategory = SUBCATEGORIES_DICT[category][0][0]
-
-            data = {
-                "category": category,
-                "subcategory": subcategory,
-                "amount": amount,
-                "date": f"2023-{month}-{day}",
-                "description": f"Test description"
-            }
-            data_list.append(data)
-
-    return data_list
+def user_models(django_user_model, create_user):
+    user1 = create_user(username="User1")
+    user2 = create_user(username="User2")
+    users = django_user_model.objects.filter(is_staff=False)
+    return users
 
 
-@pytest.fixture
-def expense_model_list(create_user, valid_expenses_data_list_for_report):
-    model_list = []
-    user = create_user(username="User1")
-    for expense_data in valid_expenses_data_list_for_report:
-        expense_data["user"] = user
-        expense = Expense.objects.create(**expense_data)
-        model_list.append(expense)
-    return model_list
+# @pytest.fixture
+# def valid_expenses_data_list_for_report():
+#     data_list = []
+#     for month in range(1, 13):
+#         for category in SUBCATEGORIES_DICT.keys():
+#             day = randint(1, 28)
+#             amount = randint(1, 1000)
+#             subcategory = SUBCATEGORIES_DICT[category][0][0]
+#
+#             data = {
+#                 "category": category,
+#                 "subcategory": subcategory,
+#                 "amount": amount,
+#                 "date": f"2023-{month}-{day}",
+#                 "description": f"Test description"
+#             }
+#             data_list.append(data)
+#
+#     return data_list
+#
+#
+# @pytest.fixture
+# def expense_model_list(create_user, valid_expenses_data_list_for_report):
+#     model_list = []
+#     user = create_user(username="User1")
+#     for expense_data in valid_expenses_data_list_for_report:
+#         expense_data["user"] = user
+#         expense = Expense.objects.create(**expense_data)
+#         model_list.append(expense)
+#     return model_list

@@ -3,7 +3,32 @@ from django.urls import reverse
 import pytest
 from rest_framework import status
 from expenses.models import Expense
-from expenses.serializers import ExpenseSerializer
+from expenses.serializers import ExpenseSerializer, UserSerializer
+
+
+class TestUserListView:
+    @pytest.mark.skip
+    @pytest.mark.django_db
+    def test_list_users_as_admin(self, auto_login_admin_user, user_models):
+        client, _ = auto_login_admin_user()
+        url = reverse("users")
+        list_response = client.get(url)
+        assert list_response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.skip
+    @pytest.mark.django_db
+    def test_list_users_as_non_admin(
+            self,
+            django_user_model,
+            auto_login_user,
+            user_models
+    ):
+        client, _ = auto_login_user(
+            user=django_user_model.objects.get(username="User1")
+        )
+        url = reverse("users")
+        list_response = client.get(url)
+        assert list_response.status_code == status.HTTP_403_FORBIDDEN
 
 
 class TestExpenseView:
