@@ -1,7 +1,9 @@
+from datetime import datetime
 from random import randint
 import pytest
 from expenses.categories import SUBCATEGORIES_DICT
-from expenses.models import Expense
+from expenses.models import Expense, Report
+from expenses.serializers import ExpenseReportQuerysetSerializer
 
 
 @pytest.fixture
@@ -74,33 +76,82 @@ def user_models(django_user_model, create_user):
     return users
 
 
-# @pytest.fixture
-# def valid_expenses_data_list_for_report():
-#     data_list = []
-#     for month in range(1, 13):
-#         for category in SUBCATEGORIES_DICT.keys():
-#             day = randint(1, 28)
-#             amount = randint(1, 1000)
-#             subcategory = SUBCATEGORIES_DICT[category][0][0]
-#
-#             data = {
-#                 "category": category,
-#                 "subcategory": subcategory,
-#                 "amount": amount,
-#                 "date": f"2023-{month}-{day}",
-#                 "description": f"Test description"
-#             }
-#             data_list.append(data)
-#
-#     return data_list
-#
-#
-# @pytest.fixture
-# def expense_model_list(create_user, valid_expenses_data_list_for_report):
-#     model_list = []
-#     user = create_user(username="User1")
-#     for expense_data in valid_expenses_data_list_for_report:
-#         expense_data["user"] = user
-#         expense = Expense.objects.create(**expense_data)
-#         model_list.append(expense)
-#     return model_list
+@pytest.fixture
+def valid_expenses_data_list_for_report():
+    data_list = []
+    for month in range(1, 13):
+        for category in SUBCATEGORIES_DICT.keys():
+            day = randint(1, 28)
+            amount = randint(1, 1000)
+            subcategory = SUBCATEGORIES_DICT[category][0][0]
+
+            data = {
+                "category": category,
+                "subcategory": subcategory,
+                "amount": amount,
+                "date": f"{str(datetime.now().year)}-{month}-{day}",
+                "description": f"Test description"
+            }
+            data_list.append(data)
+
+    return data_list
+
+
+@pytest.fixture
+def expense_model_list(create_user, valid_expenses_data_list_for_report):
+    model_list = []
+    user = create_user(username="User1")
+    for expense_data in valid_expenses_data_list_for_report:
+        expense_data["user"] = user
+        expense = Expense.objects.create(**expense_data)
+        model_list.append(expense)
+    return model_list
+
+
+# --------------------------------------#
+import sys
+# ToDo and check
+sys.path.insert(
+    0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
+)
+from report_pdf_generator import ReportPdf
+
+# ToDo and check
+
+from rest_framework.reverse import reverse
+from django.db.models import Sum, Q
+
+@pytest.fixture
+def report_model(django_user_model, expense_model_list, request):
+    year = datetime.now().year
+    month = datetime.now().month
+    q = Q(date__year=year, date__month=month)
+    expense_queryset = Expense.objects.filter(q).values("category")
+    expense_queryset = expense_queryset.annotate(total=Sum("amount"))
+    user = django_user_model.objects.get()
+    # make_report_data = {
+    #     "year": year,
+    #     "month": month,
+    #     "data": expense_queryset}
+    #report_pdf = ReportPdf(make_report_data, user=user)
+    #report_pdf.save_pdf()
+    show_report_url = reverse(
+        "show_report",
+        #request=request,
+        kwargs={"year": year, "month": month},
+    )
+    #report_save_path = report_pdf.report_save_path
+
+    expense_queryset_serializer = ExpenseReportQuerysetSerializer(
+        expense_queryset, many=True
+    )
+    report_instance = Report.objects.create(
+        user=user,
+        year=year,
+        month=month,
+        show_report_url=show_report_url,
+        data=expense_queryset_serializer.data,
+        #report_save_path=report_save_path,
+    )
+
+    return report_instance
