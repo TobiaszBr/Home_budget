@@ -20,10 +20,7 @@ class TestUserListView:
     @pytest.mark.skip
     @pytest.mark.django_db
     def test_list_users_as_non_admin(
-            self,
-            django_user_model,
-            auto_login_user,
-            user_models
+        self, django_user_model, auto_login_user, user_models
     ):
         client, _ = auto_login_user(
             user=django_user_model.objects.get(username="User1")
@@ -167,10 +164,7 @@ class TestExpenseView:
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         ("add_to_pk", "expected_status_code"),
-        [
-            (0, status.HTTP_204_NO_CONTENT),
-            (1, status.HTTP_404_NOT_FOUND)
-        ],
+        [(0, status.HTTP_204_NO_CONTENT), (1, status.HTTP_404_NOT_FOUND)],
     )
     def test_delete_expense(
         self,
@@ -235,9 +229,6 @@ class TestExpenseView:
     #     )
 
 
-
-
-
 class TestReportView:
     @pytest.mark.skip
     @pytest.mark.parametrize(
@@ -245,33 +236,36 @@ class TestReportView:
         [
             (datetime.now().year, 1),
             (datetime.now().year, None),
-        ]
+        ],
     )
     @pytest.mark.django_db
     def test_create_report_expenses_data_available_valid_input_data(
-            self,
-            django_user_model,
-            auto_login_user,
-            expense_model_list,
-            year,
-            month
+        self, django_user_model, auto_login_user, expense_model_list, year, month
     ):
         queryset = Expense.objects.all()
         report_data = queryset.values("category").annotate(total=Sum("amount"))
 
         client, user = auto_login_user(user=django_user_model.objects.get())
         url = reverse("report-list")
-        create_response = client.post(url, data={"year": year, "month": month}, format="json")
+        create_response = client.post(
+            url, data={"year": year, "month": month}, format="json"
+        )
 
         instance = Report.objects.get()
         report_delete_path = instance.report_save_path
 
         assert (
-            create_response.status_code == status.HTTP_201_CREATED and
-            create_response.data["year"] == year and
-            create_response.data["month"] == month and
-            all([True for i, element in enumerate(report_data) if create_response.data["data"][i] == report_data[i]]) and
-            os.path.isfile(report_delete_path)
+            create_response.status_code == status.HTTP_201_CREATED
+            and create_response.data["year"] == year
+            and create_response.data["month"] == month
+            and all(
+                [
+                    True
+                    for i, element in enumerate(report_data)
+                    if create_response.data["data"][i] == report_data[i]
+                ]
+            )
+            and os.path.isfile(report_delete_path)
         )
 
     @pytest.mark.skip
@@ -281,84 +275,50 @@ class TestReportView:
             (datetime.now().year + 3000, 1),
             (datetime.now().year - 2000, 1),
             (datetime.now().year, 13),
-            (datetime.now().year, 0)
-        ]
+            (datetime.now().year, 0),
+        ],
     )
     @pytest.mark.django_db
     def test_create_report_expenses_data_available_invalid_input_data(
-            self,
-            django_user_model,
-            auto_login_user,
-            expense_model_list,
-            year,
-            month
+        self, django_user_model, auto_login_user, expense_model_list, year, month
     ):
         client, user = auto_login_user(user=django_user_model.objects.get())
         url = reverse("report-list")
-        create_response = client.post(url, data={"year": year, "month": month},
-                                      format="json")
+        create_response = client.post(
+            url, data={"year": year, "month": month}, format="json"
+        )
 
         assert create_response.status_code == status.HTTP_400_BAD_REQUEST
 
-# teraz wyadałoby test create ale z już stworzonym jednym obiektem report i plikiem i spróbować zrobić taki sam
-# zarówno miesięczny jak i roczny i że się nie da bo unique together musi być
-# albo report plik już stworzony dla rocznego
+    # teraz wyadałoby test create ale z już stworzonym jednym obiektem report i plikiem i spróbować zrobić taki sam
+    # zarówno miesięczny jak i roczny i że się nie da bo unique together musi być
+    # albo report plik już stworzony dla rocznego
 
-
-    #@pytest.mark.skip
+    # @pytest.mark.skip
     @pytest.mark.parametrize(
         ("year", "month"),
         [
             (datetime.now().year, datetime.now().month),
-            #(datetime.now().year, None),
-        ]
+            # (datetime.now().year, None),
+        ],
     )
     @pytest.mark.django_db
     def test_create_report_expenses_data_available_valid_input_data_report_already_exists(
-            self,
-            django_user_model,
-            auto_login_user,
-            expense_model_list,
-            year,
-            month,
-            report_model
+        self,
+        django_user_model,
+        auto_login_user,
+        expense_model_list,
+        year,
+        month,
+        report_model,
     ):
-
         client, user = auto_login_user(user=django_user_model.objects.get())
         url = reverse("report-list")
-        create_response = client.post(url, data={"year": year, "month": month},
-                                      format="json")
-
-        assert (
-                create_response.status_code == status.HTTP_400_BAD_REQUEST
+        create_response = client.post(
+            url, data={"year": year, "month": month}, format="json"
         )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        assert create_response.status_code == status.HTTP_400_BAD_REQUEST
 
     @pytest.mark.skip
     @pytest.mark.django_db
@@ -481,10 +441,7 @@ class TestReportView:
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         ("add_to_pk", "expected_status_code"),
-        [
-            (0, status.HTTP_204_NO_CONTENT),
-            (1, status.HTTP_404_NOT_FOUND)
-        ],
+        [(0, status.HTTP_204_NO_CONTENT), (1, status.HTTP_404_NOT_FOUND)],
     )
     def test_delete_expense(
         self,

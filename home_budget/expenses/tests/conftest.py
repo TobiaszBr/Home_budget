@@ -45,6 +45,7 @@ def auto_login_admin_user(client, create_user, test_user_password):
         admin_user = create_user(username="admin", is_staff=True)
         client.login(username=admin_user.username, password=test_user_password)
         return client, admin_user
+
     return make_auto_login
 
 
@@ -90,7 +91,7 @@ def valid_expenses_data_list_for_report():
                 "subcategory": subcategory,
                 "amount": amount,
                 "date": f"{str(datetime.now().year)}-{month}-{day}",
-                "description": f"Test description"
+                "description": f"Test description",
             }
             data_list.append(data)
 
@@ -108,50 +109,14 @@ def expense_model_list(create_user, valid_expenses_data_list_for_report):
     return model_list
 
 
-# --------------------------------------#
-import sys
-# ToDo and check
-sys.path.insert(
-    0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
-)
-from report_pdf_generator import ReportPdf
-
-# ToDo and check
-
-from rest_framework.reverse import reverse
-from django.db.models import Sum, Q
-
 @pytest.fixture
-def report_model(django_user_model, expense_model_list, request):
+def report_model(django_user_model, expense_model_list):
     year = datetime.now().year
     month = datetime.now().month
-    q = Q(date__year=year, date__month=month)
-    expense_queryset = Expense.objects.filter(q).values("category")
-    expense_queryset = expense_queryset.annotate(total=Sum("amount"))
     user = django_user_model.objects.get()
-    # make_report_data = {
-    #     "year": year,
-    #     "month": month,
-    #     "data": expense_queryset}
-    #report_pdf = ReportPdf(make_report_data, user=user)
-    #report_pdf.save_pdf()
-    show_report_url = reverse(
-        "show_report",
-        #request=request,
-        kwargs={"year": year, "month": month},
-    )
-    #report_save_path = report_pdf.report_save_path
 
-    expense_queryset_serializer = ExpenseReportQuerysetSerializer(
-        expense_queryset, many=True
-    )
     report_instance = Report.objects.create(
-        user=user,
-        year=year,
-        month=month,
-        show_report_url=show_report_url,
-        data=expense_queryset_serializer.data,
-        #report_save_path=report_save_path,
+        user=user, year=year, month=month, data=["Dummy"]
     )
 
     return report_instance
