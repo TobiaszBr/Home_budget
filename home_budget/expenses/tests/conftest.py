@@ -1,9 +1,21 @@
 from datetime import datetime
 from random import randint
+import sys
+from django.db.models import Sum, Q
 import pytest
+from rest_framework.reverse import reverse
 from expenses.categories import SUBCATEGORIES_DICT
 from expenses.models import Expense, Report
 from expenses.serializers import ExpenseReportQuerysetSerializer
+
+
+# ToDo and check
+sys.path.insert(
+    0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
+)
+from report_pdf_generator import ReportPdf
+
+# ToDo and check
 
 
 @pytest.fixture
@@ -116,7 +128,81 @@ def report_model(django_user_model, expense_model_list):
     user = django_user_model.objects.get()
 
     report_instance = Report.objects.create(
+        user=user, year=year, month=None, data=["Dummy"]
+    )
+
+    report_instance = Report.objects.create(
         user=user, year=year, month=month, data=["Dummy"]
+    )
+
+    return report_instance
+
+
+@pytest.fixture
+def report_model_with_pdf_monthly_file(django_user_model, expense_model_list):
+    year = datetime.now().year
+    month = datetime.now().month
+    q = Q(date__year=year, date__month=month)
+    expense_queryset = Expense.objects.filter(q).values("category")
+    expense_queryset = expense_queryset.annotate(total=Sum("amount"))
+    user = django_user_model.objects.get()
+    make_report_data = {
+        "year": year,
+        "month": month,
+        "data": expense_queryset}
+    report_pdf = ReportPdf(make_report_data, user=user)
+    report_pdf.save_pdf()
+    show_report_url = reverse(
+        "show_report",
+        kwargs={"year": year, "month": month},
+    )
+    report_save_path = report_pdf.report_save_path
+
+    expense_queryset_serializer = ExpenseReportQuerysetSerializer(
+        expense_queryset, many=True
+    )
+    report_instance = Report.objects.create(
+        user=user,
+        year=year,
+        month=month,
+        show_report_url=show_report_url,
+        data=expense_queryset_serializer.data,
+        report_save_path=report_save_path,
+    )
+
+    return report_instance
+
+
+@pytest.fixture
+def report_model_with_pdf_annual_file(django_user_model, expense_model_list):
+    year = datetime.now().year
+    month = None
+    q = Q(date__year=year)
+    expense_queryset = Expense.objects.filter(q).values("category")
+    expense_queryset = expense_queryset.annotate(total=Sum("amount"))
+    user = django_user_model.objects.get()
+    make_report_data = {
+        "year": year,
+        "month": month,
+        "data": expense_queryset}
+    report_pdf = ReportPdf(make_report_data, user=user)
+    report_pdf.save_pdf()
+    show_report_url = reverse(
+        "show_report",
+        kwargs={"year": year, "month": month},
+    )
+    report_save_path = report_pdf.report_save_path
+
+    expense_queryset_serializer = ExpenseReportQuerysetSerializer(
+        expense_queryset, many=True
+    )
+    report_instance = Report.objects.create(
+        user=user,
+        year=year,
+        month=month,
+        show_report_url=show_report_url,
+        data=expense_queryset_serializer.data,
+        report_save_path=report_save_path,
     )
 
     return report_instance
