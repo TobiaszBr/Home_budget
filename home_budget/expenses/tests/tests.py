@@ -9,7 +9,6 @@ from expenses.serializers import ExpenseSerializer, UserSerializer, ReportSerial
 
 
 class TestUserView:
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_list_users_as_admin(self, auto_login_admin_user, user_models):
         client, _ = auto_login_admin_user()
@@ -17,7 +16,6 @@ class TestUserView:
         list_response = client.get(url)
         assert list_response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_list_users_as_non_admin(
         self, django_user_model, auto_login_user, user_models
@@ -30,8 +28,68 @@ class TestUserView:
         assert list_response.status_code == status.HTTP_403_FORBIDDEN
 
 
+class TestShowReportView:
+    @pytest.mark.django_db
+    def test_show_monthly_report(
+            self,
+            django_user_model,
+            auto_login_user,
+            report_model_with_pdf_monthly_file
+    ):
+        year = report_model_with_pdf_monthly_file.year
+        month = report_model_with_pdf_monthly_file.month
+        client, user = auto_login_user(user=django_user_model.objects.get())
+        url = reverse("show_report", kwargs={"year": year, "month": month})
+        get_response = client.get(url)
+
+        assert get_response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.django_db
+    def test_show_annual_report(
+            self,
+            django_user_model,
+            auto_login_user,
+            report_model_with_pdf_annual_file
+    ):
+        year = report_model_with_pdf_annual_file.year
+        client, user = auto_login_user(user=django_user_model.objects.get())
+        url = reverse("show_report", kwargs={"year": year})
+        get_response = client.get(url)
+
+        assert get_response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.django_db
+    def test_show_report_other_user(
+            self,
+            django_user_model,
+            auto_login_user,
+            report_model_with_pdf_monthly_file,
+            create_user
+    ):
+        year = report_model_with_pdf_monthly_file.year
+        month = report_model_with_pdf_monthly_file.month
+        other_user = create_user(username="User2")
+        client, user = auto_login_user(user=other_user)
+        url = reverse("show_report", kwargs={"year": year, "month": month})
+        get_response = client.get(url)
+
+        assert get_response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.django_db
+    def test_show_report_unauthenticated_user(
+            self,
+            client,
+            report_model_with_pdf_monthly_file
+    ):
+        year = report_model_with_pdf_monthly_file.year
+        month = report_model_with_pdf_monthly_file.month
+        url = reverse("show_report", kwargs={"year": year, "month": month})
+        get_response = client.get(url)
+
+        assert get_response.status_code == status.HTTP_403_FORBIDDEN
+
+
 class TestExpenseView:
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_create_expense(self, auto_login_user, valid_expense_data):
         client, user = auto_login_user()
@@ -43,7 +101,6 @@ class TestExpenseView:
             and create_response.data == valid_expense_data
         )
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_expense_valid_id(
         self, django_user_model, auto_login_user, expense_model
@@ -58,7 +115,6 @@ class TestExpenseView:
             and retrieve_response.data == serializer.data
         )
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_expense_invalid_id(
         self, django_user_model, auto_login_user, expense_model
@@ -69,7 +125,6 @@ class TestExpenseView:
 
         assert retrieve_response.status_code == status.HTTP_404_NOT_FOUND
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         "valid_expense_data_update",
@@ -119,7 +174,6 @@ class TestExpenseView:
             and update_response.data == valid_expense_data_update
         )
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         "invalid_expense_data_update",
@@ -160,7 +214,6 @@ class TestExpenseView:
 
         assert update_response.status_code == status.HTTP_400_BAD_REQUEST
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     @pytest.mark.parametrize(
         ("add_to_pk", "expected_status_code"),
@@ -180,7 +233,6 @@ class TestExpenseView:
 
         assert delete_response.status_code == expected_status_code
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_list_expenses_unauthenticated_user(self, client):
         url = reverse("expense-list")
@@ -190,7 +242,6 @@ class TestExpenseView:
 
 
 class TestReportView:
-    @pytest.mark.skip
     @pytest.mark.parametrize(
         ("year", "month"),
         [
@@ -228,7 +279,6 @@ class TestReportView:
             and os.path.isfile(report_delete_path)
         )
 
-    @pytest.mark.skip
     @pytest.mark.parametrize(
         ("year", "month"),
         [
@@ -250,7 +300,6 @@ class TestReportView:
 
         assert create_response.status_code == status.HTTP_400_BAD_REQUEST
 
-    @pytest.mark.skip
     @pytest.mark.parametrize(
         ("year", "month"),
         [
@@ -276,7 +325,6 @@ class TestReportView:
 
         assert create_response.status_code == status.HTTP_400_BAD_REQUEST
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_report_valid_id(
         self, django_user_model, auto_login_user, report_model
@@ -291,7 +339,6 @@ class TestReportView:
             and retrieve_response.data == serializer.data
         )
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_retrieve_report_invalid_id(
         self, django_user_model, auto_login_user, report_model
@@ -302,7 +349,6 @@ class TestReportView:
 
         assert retrieve_response.status_code == status.HTTP_404_NOT_FOUND
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_delete_monthly_report(
         self,
@@ -322,7 +368,6 @@ class TestReportView:
             os.path.isfile(report_model_with_pdf_monthly_file.report_save_path)
         )
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_delete_annual_report(
         self,
@@ -342,10 +387,9 @@ class TestReportView:
             os.path.isfile(report_model_with_pdf_annual_file.report_save_path)
         )
 
-    @pytest.mark.skip
     @pytest.mark.django_db
     def test_list_reports_unauthenticated_user(self, client):
         url = reverse("report-list")
-        list_response = client.get(url)
+        get_response = client.get(url)
 
-        assert list_response.status_code == status.HTTP_403_FORBIDDEN
+        assert get_response.status_code == status.HTTP_403_FORBIDDEN
