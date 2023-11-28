@@ -286,6 +286,7 @@ class TestReportView:
             (datetime.now().year - 2000, 1),
             (datetime.now().year, 13),
             (datetime.now().year, 0),
+            (datetime.now().year + 100, 1),
         ],
     )
     @pytest.mark.django_db

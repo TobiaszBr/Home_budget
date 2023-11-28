@@ -5,7 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from drf_pdf.response import PDFFileResponse
 from rest_framework import authentication, generics, permissions, status, viewsets
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
@@ -107,31 +107,28 @@ class ReportViewSet(ModelViewSetWithoutEditing):
         expense_queryset = expense_queryset.annotate(total=Sum("amount"))
         make_report_data = {"year": year, "month": month, "data": expense_queryset}
 
-        try:
-            # Generate pdf report
-            report_pdf = ReportPdf(make_report_data, user=self.request.user)
-            report_pdf.save_pdf()
-            show_report_url = reverse(
-                "show_report",
-                request=self.request,
-                kwargs={"year": year, "month": month},
-            )
-            report_save_path = report_pdf.report_save_path
+        if not expense_queryset:
+            raise ValidationError("No expenses data found to create pdf report.")
 
-            expense_queryset_serializer = ExpenseReportQuerysetSerializer(
-                expense_queryset, many=True
-            )
-            serializer.save(
-                user=self.request.user,
-                show_report_url=show_report_url,
-                data=expense_queryset_serializer.data,
-                report_save_path=report_save_path,
-            )
-        except:
-            raise APIException(
-                "Something went wrong with generating the pdf file."
-                " Report instance will not be saved."
-            )
+        # Generate pdf report
+        report_pdf = ReportPdf(make_report_data, user=self.request.user)
+        report_pdf.save_pdf()
+        show_report_url = reverse(
+            "show_report",
+            request=self.request,
+            kwargs={"year": year, "month": month},
+        )
+        report_save_path = report_pdf.report_save_path
+
+        expense_queryset_serializer = ExpenseReportQuerysetSerializer(
+            expense_queryset, many=True
+        )
+        serializer.save(
+            user=self.request.user,
+            show_report_url=show_report_url,
+            data=expense_queryset_serializer.data,
+            report_save_path=report_save_path,
+        )
 
     def perform_destroy(self, instance):
         # Delete also particular report_pdf file
