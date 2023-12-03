@@ -1,5 +1,7 @@
 # temp
 temp.json
+home_budget/data
+home_budget/report_pdf/*.jpg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

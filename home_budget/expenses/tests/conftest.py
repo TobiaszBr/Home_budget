@@ -10,9 +10,9 @@ from expenses.serializers import ExpenseReportQuerysetSerializer
 
 
 # ToDo and check
-sys.path.insert(
-    0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
-)
+# sys.path.insert(
+#     0, "C:\\Users\\Switch\\Desktop\\learn\\Home_budget\\home_budget\\report_pdf"
+# )
 from report_pdf_generator import ReportPdf
 
 # ToDo and check
