@@ -115,4 +115,13 @@ SUBCATEGORIES = [
     )
 ]
 
-SUBCATEGORIES_DICT = dict(SUBCATEGORIES)
+SUBCATEGORIES_DICT_TUPLE = dict(SUBCATEGORIES)
+SUBCATEGORIES_DICT = {}
+value_list = []
+
+for key, value in SUBCATEGORIES_DICT_TUPLE.items():
+    for element in value:
+        value_list.append(element[0])
+
+    SUBCATEGORIES_DICT[key] = value_list
+    value_list = []
