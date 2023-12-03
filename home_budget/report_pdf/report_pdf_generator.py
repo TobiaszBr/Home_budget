@@ -6,12 +6,11 @@ from matplotlib import pyplot as plt
 from weasyprint import HTML, CSS
 
 
-# pyplot backend needs to be changed
-matplotlib.use("Agg")
-
-
 class ReportPdf:
     def __init__(self, data, user):
+        # pyplot backend needs to be changed
+        matplotlib.use("Agg")
+
         self.data = data
         self.user = user
         self.report_year = int(self.data["year"])
@@ -84,7 +83,7 @@ class ReportPdf:
             self.BASE_DIR, self.report_directory, self.bar_chart_name
         )
         plt.savefig(bar_chart_path)
-        self.bar_char_path = "file:\\\\" + bar_chart_path
+        self.bar_char_path = "file://" + bar_chart_path
         plt.close()
 
     def create_pie_chart(self):
@@ -102,7 +101,7 @@ class ReportPdf:
         )
 
         plt.savefig(pie_chart_path, bbox_inches="tight")
-        self.pie_char_path = "file:\\\\" + pie_chart_path
+        self.pie_char_path = "file://" + pie_chart_path
         plt.close()
 
     @staticmethod
@@ -180,7 +179,7 @@ class ReportPdf:
             }
             
             h1 {
-                font-size: 48px;
+                font-size: 38px;
             }
             
             img.displayed {
@@ -197,7 +196,7 @@ class ReportPdf:
             thead {
                 background-color: #99b0a8;
                 color: white;
-                font-size: 26px;
+                font-size: 20px;
             }
 
             tr {
