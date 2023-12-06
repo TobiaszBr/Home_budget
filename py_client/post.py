@@ -2,7 +2,6 @@ import requests
 from getpass import getpass
 from random import randint
 from home_budget.expenses.categories import SUBCATEGORIES_DICT
-#from categories import SUBCATEGORIES_DICT
 
 
 # Authentitacion
@@ -60,6 +59,5 @@ if auth_response.status_code == 200:
 else:
     print("Something went wrong - auth?")
     print(auth_response.status_code)
-
 
     #pp(post_response.json())
