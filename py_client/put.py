@@ -19,7 +19,6 @@ if auth_response.status_code == 200:
     }
 
     endpoint_put = "http://localhost:8000/api/expenses/1/"
-
     put_data = {
         "category": "Food",
         "subcategory": "Fast food",
@@ -30,5 +29,4 @@ if auth_response.status_code == 200:
 
     # put response
     put_response = requests.put(endpoint_put, json=put_data, headers=headers)
-
     pp(put_response.json())

@@ -1,12 +1,12 @@
-import requests
 from getpass import getpass
 from random import randint
+import requests
 from home_budget.expenses.categories import SUBCATEGORIES_DICT
 
 
 # Authentitacion
 auth_endpoint = "http://localhost:8000/api/auth/"
-password = "testpassword1"    #getpass()
+password = getpass()
 data = {
     "username": "TestUser",
     "password": password
@@ -19,17 +19,6 @@ if auth_response.status_code == 200:
         "Authorization": f"Token {token}"
     }
     endpoint_post = "http://localhost:8000/api/expenses/"
-
-    # post_data = {
-    #     "category": "Savings",
-    #     "subcategory": "Financial cushion",
-    #     "amount": "123.4",
-    #     "date": f"2023-11-01",
-    #     "description": f"Test description"
-    # }
-
-    # post response
-    # post_response = requests.post(endpoint_post, json=post_data, headers=headers)
 
     i = 1
     for year in range(2019, 2024):
@@ -59,5 +48,3 @@ if auth_response.status_code == 200:
 else:
     print("Something went wrong - auth?")
     print(auth_response.status_code)
-
-    #pp(post_response.json())

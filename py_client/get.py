@@ -1,6 +1,6 @@
-import requests
 from getpass import getpass
 from pprint import pprint as pp
+import requests
 
 
 # Authentitacion

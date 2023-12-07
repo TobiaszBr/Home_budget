@@ -13,7 +13,9 @@ from expenses.serializers import ExpenseSerializer, UserSerializer, ReportSerial
 
 class TestUserView:
     @pytest.mark.django_db
-    def test_list_users_as_admin(self, auto_login_admin_user: Callable, user_models: List[get_user_model()]) -> None:
+    def test_list_users_as_admin(
+        self, auto_login_admin_user: Callable, user_models: List[get_user_model()]
+    ) -> None:
         client, _ = auto_login_admin_user()
         url = reverse("users")
         list_response = client.get(url)
@@ -21,7 +23,10 @@ class TestUserView:
 
     @pytest.mark.django_db
     def test_list_users_as_non_admin(
-        self, django_user_model, auto_login_user: Callable, user_models: List[get_user_model()]
+        self,
+        django_user_model,
+        auto_login_user: Callable,
+        user_models: List[get_user_model()],
     ) -> None:
         client, _ = auto_login_user(
             user=django_user_model.objects.get(username="User1")
@@ -34,10 +39,10 @@ class TestUserView:
 class TestShowReportView:
     @pytest.mark.django_db
     def test_show_monthly_report(
-            self,
-            django_user_model,
-            auto_login_user: Callable,
-            report_model_with_pdf_monthly_file: Report
+        self,
+        django_user_model,
+        auto_login_user: Callable,
+        report_model_with_pdf_monthly_file: Report,
     ) -> None:
         year = report_model_with_pdf_monthly_file.year
         month = report_model_with_pdf_monthly_file.month
@@ -49,10 +54,10 @@ class TestShowReportView:
 
     @pytest.mark.django_db
     def test_show_annual_report(
-            self,
-            django_user_model,
-            auto_login_user: Callable,
-            report_model_with_pdf_annual_file: Report
+        self,
+        django_user_model,
+        auto_login_user: Callable,
+        report_model_with_pdf_annual_file: Report,
     ) -> None:
         year = report_model_with_pdf_annual_file.year
         client, user = auto_login_user(user=django_user_model.objects.get())
@@ -63,11 +68,11 @@ class TestShowReportView:
 
     @pytest.mark.django_db
     def test_show_report_other_user(
-            self,
-            django_user_model,
-            auto_login_user: Callable,
-            report_model_with_pdf_monthly_file: Report,
-            create_user: Callable
+        self,
+        django_user_model,
+        auto_login_user: Callable,
+        report_model_with_pdf_monthly_file: Report,
+        create_user: Callable,
     ) -> None:
         year = report_model_with_pdf_monthly_file.year
         month = report_model_with_pdf_monthly_file.month
@@ -80,9 +85,7 @@ class TestShowReportView:
 
     @pytest.mark.django_db
     def test_show_report_unauthenticated_user(
-            self,
-            client: APIClient,
-            report_model_with_pdf_monthly_file: Report
+        self, client: APIClient, report_model_with_pdf_monthly_file: Report
     ) -> None:
         year = report_model_with_pdf_monthly_file.year
         month = report_model_with_pdf_monthly_file.month
@@ -94,7 +97,9 @@ class TestShowReportView:
 
 class TestExpenseView:
     @pytest.mark.django_db
-    def test_create_expense(self, auto_login_user: Callable, valid_expense_data: dict[str, str]) -> None:
+    def test_create_expense(
+        self, auto_login_user: Callable, valid_expense_data: dict[str, str]
+    ) -> None:
         client, user = auto_login_user()
         url = reverse("expense-list")
         create_response = client.post(url, data=valid_expense_data, format="json")
@@ -254,7 +259,12 @@ class TestReportView:
     )
     @pytest.mark.django_db
     def test_create_report_valid_input_data(
-        self, django_user_model, auto_login_user: Callable, expense_model_list: List[Expense], year: int, month: int
+        self,
+        django_user_model,
+        auto_login_user: Callable,
+        expense_model_list: List[Expense],
+        year: int,
+        month: int,
     ) -> None:
         queryset = Expense.objects.all()
         report_data = queryset.values("category").annotate(total=Sum("amount"))
@@ -294,7 +304,12 @@ class TestReportView:
     )
     @pytest.mark.django_db
     def test_create_report_invalid_input_data(
-        self, django_user_model, auto_login_user: Callable, expense_model_list: List[Expense], year: int, month: int
+        self,
+        django_user_model,
+        auto_login_user: Callable,
+        expense_model_list: List[Expense],
+        year: int,
+        month: int,
     ) -> None:
         client, user = auto_login_user(user=django_user_model.objects.get())
         url = reverse("report-list")
@@ -358,18 +373,17 @@ class TestReportView:
         self,
         django_user_model,
         auto_login_user: Callable,
-        report_model_with_pdf_monthly_file: Report
+        report_model_with_pdf_monthly_file: Report,
     ) -> None:
         client, user = auto_login_user(user=django_user_model.objects.get())
-        url = reverse("report-detail", kwargs={
-            "pk": report_model_with_pdf_monthly_file.id
-            }
+        url = reverse(
+            "report-detail", kwargs={"pk": report_model_with_pdf_monthly_file.id}
         )
         delete_response = client.delete(url)
 
         assert (
-            delete_response.status_code == status.HTTP_204_NO_CONTENT and not
-            os.path.isfile(report_model_with_pdf_monthly_file.report_save_path)
+            delete_response.status_code == status.HTTP_204_NO_CONTENT
+            and not os.path.isfile(report_model_with_pdf_monthly_file.report_save_path)
         )
 
     @pytest.mark.django_db
@@ -377,18 +391,17 @@ class TestReportView:
         self,
         django_user_model,
         auto_login_user: Callable,
-        report_model_with_pdf_annual_file: Report
+        report_model_with_pdf_annual_file: Report,
     ) -> None:
         client, user = auto_login_user(user=django_user_model.objects.get())
-        url = reverse("report-detail", kwargs={
-            "pk": report_model_with_pdf_annual_file.id
-            }
+        url = reverse(
+            "report-detail", kwargs={"pk": report_model_with_pdf_annual_file.id}
         )
         delete_response = client.delete(url)
 
         assert (
-            delete_response.status_code == status.HTTP_204_NO_CONTENT and not
-            os.path.isfile(report_model_with_pdf_annual_file.report_save_path)
+            delete_response.status_code == status.HTTP_204_NO_CONTENT
+            and not os.path.isfile(report_model_with_pdf_annual_file.report_save_path)
         )
 
     @pytest.mark.django_db

@@ -5,10 +5,10 @@ class PDFRendererCustom(BaseRenderer):
 
     """ Renderer for PDF binary content. """
 
-    media_type = 'application/pdf'
-    format = 'pdf'
+    media_type = "application/pdf"
+    format = "pdf"
     charset = "ISO-8859-2"
-    render_style = 'binary'
+    render_style = "binary"
 
     def render(self, data, media_type=None, renderer_context=None):
         """

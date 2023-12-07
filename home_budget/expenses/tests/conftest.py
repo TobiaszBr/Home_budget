@@ -28,11 +28,14 @@ def create_user(django_user_model, test_user_password: str) -> Callable:
         kwargs["password"] = test_user_password
         user = django_user_model.objects.create_user(**kwargs)
         return user
+
     return make_user
 
 
 @pytest.fixture
-def auto_login_user(client: APIClient, create_user: Callable, test_user_password: str) -> Callable:
+def auto_login_user(
+    client: APIClient, create_user: Callable, test_user_password: str
+) -> Callable:
     def make_auto_login(user=None):
         if user is None:
             user = create_user(username="User1")
@@ -43,7 +46,9 @@ def auto_login_user(client: APIClient, create_user: Callable, test_user_password
 
 
 @pytest.fixture
-def auto_login_admin_user(client: APIClient, create_user: Callable, test_user_password: str) -> Callable:
+def auto_login_admin_user(
+    client: APIClient, create_user: Callable, test_user_password: str
+) -> Callable:
     def make_auto_login():
         admin_user = create_user(username="admin", is_staff=True)
         client.login(username=admin_user.username, password=test_user_password)
@@ -102,7 +107,10 @@ def valid_expenses_data_list_for_report() -> List[dict[str, str | int]]:
 
 
 @pytest.fixture
-def expense_model_list(create_user: Callable, valid_expenses_data_list_for_report: List[dict[str, str | int]]) -> List[Expense]:
+def expense_model_list(
+    create_user: Callable,
+    valid_expenses_data_list_for_report: List[dict[str, str | int]],
+) -> List[Expense]:
     model_list = []
     user = create_user(username="User1")
     for expense_data in valid_expenses_data_list_for_report:
@@ -128,17 +136,16 @@ def report_model(django_user_model, expense_model_list: List[Expense]) -> Report
 
 
 @pytest.fixture
-def report_model_with_pdf_monthly_file(django_user_model, expense_model_list: List[Expense]) -> Report:
+def report_model_with_pdf_monthly_file(
+    django_user_model, expense_model_list: List[Expense]
+) -> Report:
     year = datetime.now().year
     month = datetime.now().month
     q = Q(date__year=year, date__month=month)
     expense_queryset = Expense.objects.filter(q).values("category")
     expense_queryset = expense_queryset.annotate(total=Sum("amount"))
     user = django_user_model.objects.get()
-    make_report_data = {
-        "year": year,
-        "month": month,
-        "data": expense_queryset}
+    make_report_data = {"year": year, "month": month, "data": expense_queryset}
     report_pdf = ReportPdf(make_report_data, user=user)
     report_pdf.save_pdf()
     show_report_url = reverse(
@@ -162,17 +169,16 @@ def report_model_with_pdf_monthly_file(django_user_model, expense_model_list: Li
 
 
 @pytest.fixture
-def report_model_with_pdf_annual_file(django_user_model, expense_model_list: List[Expense]) -> Report:
+def report_model_with_pdf_annual_file(
+    django_user_model, expense_model_list: List[Expense]
+) -> Report:
     year = datetime.now().year
     month = None
     q = Q(date__year=year)
     expense_queryset = Expense.objects.filter(q).values("category")
     expense_queryset = expense_queryset.annotate(total=Sum("amount"))
     user = django_user_model.objects.get()
-    make_report_data = {
-        "year": year,
-        "month": month,
-        "data": expense_queryset}
+    make_report_data = {"year": year, "month": month, "data": expense_queryset}
     report_pdf = ReportPdf(make_report_data, user=user)
     report_pdf.save_pdf()
     show_report_url = reverse(
