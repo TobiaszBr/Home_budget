@@ -7,7 +7,7 @@ import requests
 auth_endpoint = "http://localhost:8000/api/auth/"
 password = getpass()
 data = {
-    "username": "Tobiasz",
+    "username": "TestUser",
     "password": password
 }
 auth_response = requests.post(auth_endpoint, json=data)
@@ -17,12 +17,15 @@ if auth_response.status_code == 200:
     headers = {
         "Authorization": f"Token {token}"
     }
-    # Get expenses list
-    #endpoint = "http://localhost:8000/api/expenses/"
 
-    # Get reports list
-    endpoint = "http://localhost:8000/api/reports/"
+    patch_data = {
+        "category": "Food",
+        "subcategory": "Fast food"
+    }
 
-    # GET response
-    get_response = requests.get(endpoint, headers=headers)
-    pp(get_response.json())
+    endpoint_patch = "http://localhost:8000/api/expenses/1/"
+
+    # patch response
+    patch_response = requests.patch(endpoint_patch, json=patch_data, headers=headers)
+
+    pp(patch_response.json())

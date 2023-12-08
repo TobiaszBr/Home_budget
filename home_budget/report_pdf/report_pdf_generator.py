@@ -1,17 +1,17 @@
 from datetime import date
-import os
-from pathlib import Path
+from django.contrib.auth import get_user_model
 import matplotlib
 from matplotlib import pyplot as plt
+import os
+from pathlib import Path
 from weasyprint import HTML, CSS
 
 
-# pyplot backend needs to be changed
-matplotlib.use("Agg")
-
-
 class ReportPdf:
-    def __init__(self, data, user):
+    def __init__(self, data: dict, user: get_user_model()) -> None:
+        # pyplot backend needs to be changed
+        matplotlib.use("Agg")
+
         self.data = data
         self.user = user
         self.report_year = int(self.data["year"])
@@ -60,7 +60,7 @@ class ReportPdf:
         self.content = self.create_content()
         self.stylesheet = self.create_style_css()
 
-    def create_table(self):
+    def create_table(self) -> None:
         # create table headers
         for key in self.data["data"][0].keys():
             header = f"<th>{key.title()}</th>"
@@ -75,7 +75,7 @@ class ReportPdf:
             self.chart_axis_x.append(element["category"])
             self.chart_axis_y.append(element["total"])
 
-    def create_bar_chart(self):
+    def create_bar_chart(self) -> None:
         plt.bar(self.chart_axis_x, self.chart_axis_y, width=0.5, color=self.char_colors)
         plt.grid(axis="y")
         plt.xticks(rotation=20, ha="right")
@@ -84,10 +84,10 @@ class ReportPdf:
             self.BASE_DIR, self.report_directory, self.bar_chart_name
         )
         plt.savefig(bar_chart_path)
-        self.bar_char_path = "file:\\\\" + bar_chart_path
+        self.bar_char_path = "file://" + bar_chart_path
         plt.close()
 
-    def create_pie_chart(self):
+    def create_pie_chart(self) -> None:
         patches, texts, autotexts = plt.pie(
             self.chart_axis_y,
             labels=self.chart_axis_x,
@@ -102,11 +102,11 @@ class ReportPdf:
         )
 
         plt.savefig(pie_chart_path, bbox_inches="tight")
-        self.pie_char_path = "file:\\\\" + pie_chart_path
+        self.pie_char_path = "file://" + pie_chart_path
         plt.close()
 
     @staticmethod
-    def create_style_css():
+    def create_style_css() -> str:
         stylesheet = """
             div.container_page {
                 width: 210mm;
@@ -180,7 +180,7 @@ class ReportPdf:
             }
             
             h1 {
-                font-size: 48px;
+                font-size: 38px;
             }
             
             img.displayed {
@@ -197,7 +197,7 @@ class ReportPdf:
             thead {
                 background-color: #99b0a8;
                 color: white;
-                font-size: 26px;
+                font-size: 20px;
             }
 
             tr {
@@ -211,7 +211,7 @@ class ReportPdf:
         """
         return stylesheet
 
-    def create_content(self):
+    def create_content(self) -> str:
         data_table = f"""<table>
             <thead>
                 <tr>
@@ -237,7 +237,7 @@ class ReportPdf:
 
         return content
 
-    def save_pdf(self):
+    def save_pdf(self) -> None:
         html = HTML(string=self.content)
         css = CSS(string=self.stylesheet)
         html.write_pdf(self.report_save_path, stylesheets=[css])

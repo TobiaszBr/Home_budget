@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
@@ -11,7 +12,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
         model = Expense
         fields = ["id", "category", "subcategory", "amount", "date", "description"]
 
-    def validate(self, data):
+    def validate(self, data: OrderedDict) -> OrderedDict:
         # Validate given category with actual subcategory
         if "category" in data.keys() and "subcategory" not in data.keys():
             actual_subcategory = self.context["object_instance"].subcategory
@@ -56,7 +57,7 @@ class ReportSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def validate(self, data):
+    def validate(self, data: OrderedDict) -> OrderedDict:
         # check if the year is unique while there is no month,
         if not data["month"]:
             try:

@@ -1,6 +1,3 @@
-# temp
-temp.json
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -164,4 +161,5 @@ cython_debug/
 #.idea/
 
 # My files
-home_budget/report_pdf/report.pdf
+home_budget/data
+home_budget/report_pdf/*.jpg
