@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "django_filters",
     "drf_pdf",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
