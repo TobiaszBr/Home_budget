@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import os
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
@@ -71,7 +72,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         return context
 
 
-class ShowReportPdfAPIViewMonthly(APIView):
+class BaseShowReportPdfAPIView(ABC, APIView):
     authentication_classes = [
         authentication.SessionAuthentication,
         authentication.TokenAuthentication,
@@ -79,31 +80,28 @@ class ShowReportPdfAPIViewMonthly(APIView):
     permission_classes = [permissions.IsAuthenticated]
     renderer_classes = (PDFRendererCustom,)
 
+    @abstractmethod
+    def get(self):
+        pass
+
+
+class ShowReportPdfAPIViewMonthly(BaseShowReportPdfAPIView):
     @swagger_decorator_show_report_monthly
     def get(self, request, year: str = None, month: str = None) -> PDFFileResponse:
         report_instance = get_object_or_404(
             Report, user=self.request.user, year=year, month=month
         )
         file_path = os.path.join(report_instance.report_save_path)
-
         return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
 
 
-class ShowReportPdfAPIViewAnnual(APIView):
-    authentication_classes = [
-        authentication.SessionAuthentication,
-        authentication.TokenAuthentication,
-    ]
-    permission_classes = [permissions.IsAuthenticated]
-    renderer_classes = (PDFRendererCustom,)
-
+class ShowReportPdfAPIViewAnnual(BaseShowReportPdfAPIView):
     @swagger_decorator_show_report_annual
     def get(self, request, year: str = None) -> PDFFileResponse:
         report_instance = get_object_or_404(
             Report, user=self.request.user, year=year, month=None
         )
         file_path = os.path.join(report_instance.report_save_path)
-
         return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
 
 

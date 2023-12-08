@@ -149,7 +149,7 @@ def report_model_with_pdf_monthly_file(
     report_pdf = ReportPdf(make_report_data, user=user)
     report_pdf.save_pdf()
     show_report_url = reverse(
-        "show_report",
+        "show_report_monthly",
         kwargs={"year": year, "month": month},
     )
     report_save_path = report_pdf.report_save_path
@@ -182,8 +182,8 @@ def report_model_with_pdf_annual_file(
     report_pdf = ReportPdf(make_report_data, user=user)
     report_pdf.save_pdf()
     show_report_url = reverse(
-        "show_report",
-        kwargs={"year": year, "month": month},
+        "show_report_annual",
+        kwargs={"year": year},
     )
     report_save_path = report_pdf.report_save_path
 

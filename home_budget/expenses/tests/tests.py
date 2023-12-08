@@ -47,7 +47,7 @@ class TestShowReportView:
         year = report_model_with_pdf_monthly_file.year
         month = report_model_with_pdf_monthly_file.month
         client, user = auto_login_user(user=django_user_model.objects.get())
-        url = reverse("show_report", kwargs={"year": year, "month": month})
+        url = reverse("show_report_monthly", kwargs={"year": year, "month": month})
         get_response = client.get(url)
 
         assert get_response.status_code == status.HTTP_200_OK
@@ -61,7 +61,7 @@ class TestShowReportView:
     ) -> None:
         year = report_model_with_pdf_annual_file.year
         client, user = auto_login_user(user=django_user_model.objects.get())
-        url = reverse("show_report", kwargs={"year": year})
+        url = reverse("show_report_annual", kwargs={"year": year})
         get_response = client.get(url)
 
         assert get_response.status_code == status.HTTP_200_OK
@@ -78,7 +78,7 @@ class TestShowReportView:
         month = report_model_with_pdf_monthly_file.month
         other_user = create_user(username="User2")
         client, user = auto_login_user(user=other_user)
-        url = reverse("show_report", kwargs={"year": year, "month": month})
+        url = reverse("show_report_monthly", kwargs={"year": year, "month": month})
         get_response = client.get(url)
 
         assert get_response.status_code == status.HTTP_404_NOT_FOUND
@@ -89,7 +89,7 @@ class TestShowReportView:
     ) -> None:
         year = report_model_with_pdf_monthly_file.year
         month = report_model_with_pdf_monthly_file.month
-        url = reverse("show_report", kwargs={"year": year, "month": month})
+        url = reverse("show_report_monthly", kwargs={"year": year, "month": month})
         get_response = client.get(url)
 
         assert get_response.status_code == status.HTTP_403_FORBIDDEN
