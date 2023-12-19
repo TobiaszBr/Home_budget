@@ -130,3 +130,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10
 }
+
+
+# SWAGGER_SETTINGS = {
+#     "LOGIN_URL": "api-auth/login/?next=/api/",
+#     "LOGOUT_URL": "temp/"
+# }
