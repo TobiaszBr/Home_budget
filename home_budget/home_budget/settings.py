@@ -128,11 +128,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 10
+    "PAGE_SIZE": 10,
 }
 
-
-# SWAGGER_SETTINGS = {
-#     "LOGIN_URL": "api-auth/login/?next=/api/",
-#     "LOGOUT_URL": "temp/"
-# }
+SWAGGER_SETTINGS = {
+    "LOGIN_URL": "api-auth/login/",
+    "LOGOUT_URL": "api-auth/logout/",
+}
