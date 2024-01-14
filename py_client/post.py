@@ -36,10 +36,8 @@ if auth_response.status_code == 200:
                     "date": f"{year}-{month}-{day}",
                     "description": f"Test description {i}"
                 }
-
                 # POST response
                 post_response = requests.post(endpoint_post, json=data, headers=headers)
-
                 if post_response.status_code != 201:
                     print(data, post_response.json())
 

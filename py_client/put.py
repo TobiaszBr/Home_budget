@@ -17,7 +17,6 @@ if auth_response.status_code == 200:
     headers = {
         "Authorization": f"Token {token}"
     }
-
     endpoint_put = "http://localhost:8000/api/expenses/1/"
     put_data = {
         "category": "Food",
@@ -26,7 +25,6 @@ if auth_response.status_code == 200:
         "date": f"2023-11-02",
         "description": f"Test description 2"
     }
-
     # put response
     put_response = requests.put(endpoint_put, json=put_data, headers=headers)
     pp(put_response.json())

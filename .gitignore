@@ -163,3 +163,4 @@ cython_debug/
 # My files
 home_budget/data
 home_budget/report_pdf/*.jpg
+home_budget/report_pdf/*.pdf

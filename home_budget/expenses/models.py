@@ -24,6 +24,9 @@ class Expense(models.Model):
     user = models.ForeignKey(User, related_name="expenses", on_delete=models.CASCADE)
     description = models.TextField(max_length=100)
 
+    def __str__(self):
+        return f"{self.user} {self.category} {self.date}"
+
 
 class Report(models.Model):
     user = models.ForeignKey(User, related_name="report", on_delete=models.CASCADE)
@@ -41,3 +44,9 @@ class Report(models.Model):
     show_report_url = models.URLField(blank=True, null=True)
     data = models.JSONField()
     report_save_path = models.CharField(max_length=100, null=True)
+
+    def __str__(self):
+        if self.month:
+            return f"{self.user} {self.month}.{self.year}"
+        else:
+            return f"{self.user} {self.year}"
