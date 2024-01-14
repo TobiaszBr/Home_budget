@@ -3,7 +3,7 @@ from .models import Expense, Report
 
 
 class ExpenseAdmin(admin.ModelAdmin):
-    fields = ["category", "subcategory", "amount", "date", "description"]
+    fields = ["user", "category", "subcategory", "amount", "date", "description"]
 
 
 class ReportAdmin(admin.ModelAdmin):
