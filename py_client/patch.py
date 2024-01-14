@@ -17,15 +17,12 @@ if auth_response.status_code == 200:
     headers = {
         "Authorization": f"Token {token}"
     }
-
     patch_data = {
         "category": "Food",
         "subcategory": "Fast food"
     }
-
     endpoint_patch = "http://localhost:8000/api/expenses/1/"
 
     # patch response
     patch_response = requests.patch(endpoint_patch, json=patch_data, headers=headers)
-
     pp(patch_response.json())

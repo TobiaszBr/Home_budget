@@ -29,7 +29,7 @@ from .serializers import (
     UserSerializer,
 )
 from .viewsets import ModelViewSetWithoutEditing
-from report_pdf_generator import ReportPdf
+from .report_pdf_generator import ReportPdf
 
 
 class UsersListAPIView(generics.ListAPIView):

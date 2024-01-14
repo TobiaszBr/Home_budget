@@ -9,7 +9,7 @@ from typing import Callable, List
 from expenses.categories import SUBCATEGORIES_DICT
 from expenses.models import Expense, Report
 from expenses.serializers import ExpenseReportQuerysetSerializer
-from report_pdf_generator import ReportPdf
+from expenses.report_pdf_generator import ReportPdf
 
 
 @pytest.fixture
