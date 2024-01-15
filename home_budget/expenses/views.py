@@ -57,7 +57,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     ordering_fields = ["category", "subcategory", "amount", "date"]
 
     def perform_create(self, serializer: ExpenseSerializer) -> None:
-        serializer.save(user=self.request.user.id)
+        serializer.save(user=self.request.user)
 
     def get_queryset(self) -> List[Expense]:
         return Expense.objects.filter(user=self.request.user.id)
@@ -89,7 +89,7 @@ class ShowReportPdfAPIViewMonthly(BaseShowReportPdfAPIView):
     @swagger_decorator_show_report_monthly
     def get(self, request, year: str = None, month: str = None) -> PDFFileResponse:
         report_instance = get_object_or_404(
-            Report, user=self.request.user.id, year=year, month=month
+            Report, user=self.request.user, year=year, month=month
         )
         file_path = os.path.join(report_instance.report_save_path)
         return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
@@ -99,7 +99,7 @@ class ShowReportPdfAPIViewAnnual(BaseShowReportPdfAPIView):
     @swagger_decorator_show_report_annual
     def get(self, request, year: str = None) -> PDFFileResponse:
         report_instance = get_object_or_404(
-            Report, user=self.request.user.id, year=year, month=None
+            Report, user=self.request.user, year=year, month=None
         )
         file_path = os.path.join(report_instance.report_save_path)
         return PDFFileResponse(file_path=file_path, status=status.HTTP_200_OK)
@@ -141,7 +141,7 @@ class ReportViewSet(ModelViewSetWithoutEditing):
             raise ValidationError("No expenses data found to create pdf report.")
 
         # Generate pdf report
-        report_pdf = ReportPdf(make_report_data, user=self.request.user.id)
+        report_pdf = ReportPdf(make_report_data, user=self.request.user)
         report_pdf.save_pdf()
         if month:
             show_report_url = reverse(
@@ -162,7 +162,7 @@ class ReportViewSet(ModelViewSetWithoutEditing):
             expense_queryset, many=True
         )
         serializer.save(
-            user=self.request.user.id,
+            user=self.request.user,
             show_report_url=show_report_url,
             data=expense_queryset_serializer.data,
             report_save_path=report_save_path,
