@@ -54,11 +54,17 @@ class ReportPdf:
         ]
 
         # call create methods
+        self.check_if_directory_exists()
         self.create_table()
         self.create_bar_chart()
         self.create_pie_chart()
         self.content = self.create_content()
         self.stylesheet = self.create_style_css()
+
+    def check_if_directory_exists(self):
+        dir_path = os.path.join(self.BASE_DIR, self.report_directory)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
 
     def create_table(self) -> None:
         # create table headers
